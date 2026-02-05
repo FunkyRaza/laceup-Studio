@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -100,6 +100,29 @@
 
 @layer components {
   .container-custom {
+    @apply w-full px-4 sm:px-6;
+    max-width: 100%;
+  }
+  
+  @media (min-width: 1024px) {
+    .container-custom {
+      @apply px-8;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .container-custom {
+      @apply px-12;
+    }
+  }
+  
+  @media (min-width: 1536px) {
+    .container-custom {
+      @apply px-16;
+    }
+  }
+  
+  .container-constrained {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 

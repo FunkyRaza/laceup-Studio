@@ -27,9 +27,9 @@ const Cart: React.FC = () => {
       <div className="container-custom py-8 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 xl:col-span-3 space-y-4">
             {items.map((item) => (
               <div
                 key={item._id}

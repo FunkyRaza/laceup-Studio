@@ -44,13 +44,13 @@ const Index: React.FC = () => {
         </div>
         
         <div className="container-custom relative z-10">
-          <div className="max-w-2xl animate-slide-up">
+          <div className="max-w-3xl lg:max-w-4xl animate-slide-up">
             <p className="text-accent font-medium mb-4 tracking-wider uppercase">New Collection 2024</p>
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6">
               Elevate Your
               <span className="block text-accent">Style</span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-md">
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg lg:max-w-xl">
               Discover premium fashion essentials crafted for the modern individual. Quality meets sophistication.
             </p>
             <div className="flex flex-wrap gap-4">
@@ -68,7 +68,7 @@ const Index: React.FC = () => {
       {/* Features Bar */}
       <section className="border-y border-border bg-secondary/50">
         <div className="container-custom py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {features.map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center">
@@ -94,7 +94,7 @@ const Index: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {categories.map((category) => (
               <Link
                 key={category._id}
@@ -134,7 +134,7 @@ const Index: React.FC = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {featuredProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
@@ -189,7 +189,7 @@ const Index: React.FC = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {newArrivals.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
@@ -220,7 +220,7 @@ const Index: React.FC = () => {
             <p className="text-muted-foreground">Follow us on Instagram for daily inspiration</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {products.slice(0, 4).map((product, i) => (
               <a
                 key={i}

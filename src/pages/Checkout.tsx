@@ -131,9 +131,9 @@ const Checkout: React.FC = () => {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {/* Form */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 xl:col-span-3">
             {step === 1 && (
               <div className="animate-fade-in">
                 <h2 className="text-xl font-semibold mb-6">Shipping Information</h2>

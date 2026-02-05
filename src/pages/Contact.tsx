@@ -37,7 +37,7 @@ const Contact: React.FC = () => {
 
       {/* Header */}
       <section className="bg-secondary/30 py-16">
-        <div className="container-custom text-center">
+        <div className="container-constrained text-center">
           <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
             Have a question? We'd love to hear from you.
@@ -46,7 +46,7 @@ const Contact: React.FC = () => {
       </section>
 
       <section className="py-16">
-        <div className="container-custom">
+        <div className="container-constrained">
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Contact Info */}
             <div className="lg:col-span-1">

@@ -24,7 +24,7 @@ const About: React.FC = () => {
         >
           <div className="absolute inset-0 bg-foreground/60" />
         </div>
-        <div className="container-custom relative z-10 text-center text-primary-foreground">
+        <div className="container-constrained relative z-10 text-center text-primary-foreground">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">Our Story</h1>
           <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
             Crafting timeless style for the modern individual
@@ -34,7 +34,7 @@ const About: React.FC = () => {
 
       {/* Story */}
       <section className="py-20">
-        <div className="container-custom">
+        <div className="container-constrained">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-6">Founded on Passion</h2>
@@ -65,7 +65,7 @@ const About: React.FC = () => {
 
       {/* Values */}
       <section className="py-20 bg-secondary/30">
-        <div className="container-custom">
+        <div className="container-constrained">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Values</h2>
             <p className="text-muted-foreground max-w-md mx-auto">
@@ -88,7 +88,7 @@ const About: React.FC = () => {
 
       {/* Stats */}
       <section className="py-20">
-        <div className="container-custom">
+        <div className="container-constrained">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-4xl md:text-5xl font-bold mb-2">50K+</p>

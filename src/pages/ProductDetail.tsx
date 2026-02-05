@@ -108,7 +108,7 @@ const ProductDetail: React.FC = () => {
 
       {/* Product Details */}
       <div className="container-custom pb-16">
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16">
           {/* Images */}
           <div className="space-y-4">
             <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
@@ -267,7 +267,7 @@ const ProductDetail: React.FC = () => {
         <section className="bg-secondary/30 py-16">
           <div className="container-custom">
             <h2 className="text-2xl font-bold mb-8">You May Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {relatedProducts.map((p) => (
                 <ProductCard key={p._id} product={p} />
               ))}
