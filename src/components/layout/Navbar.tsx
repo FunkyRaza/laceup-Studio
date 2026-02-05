@@ -115,6 +115,9 @@ export const Navbar: React.FC = () => {
               <Link to="/shop" className="text-sm font-medium hover:text-muted-foreground transition-colors">
                 All Products
               </Link>
+              <Link to="/showcase" className="text-sm font-medium hover:text-muted-foreground transition-colors text-primary">
+                Showcase
+              </Link>
             </nav>
 
             {/* Right Actions */}
@@ -202,6 +205,7 @@ export const Navbar: React.FC = () => {
               ))}
               <div className="pt-4 border-t border-border">
                 <Link to="/shop" className="block py-2 text-lg font-medium">All Products</Link>
+                <Link to="/showcase" className="block py-2 text-lg font-medium text-primary">Showcase</Link>
                 <Link to="/about" className="block py-2 text-lg font-medium">About</Link>
                 <Link to="/contact" className="block py-2 text-lg font-medium">Contact</Link>
                 {isAdmin && (
