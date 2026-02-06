@@ -74,7 +74,7 @@ const Orders: React.FC = () => {
             {orders.map((order) => {
               const status = statusConfig[order.status];
               const StatusIcon = status.icon;
-              
+
               return (
                 <div key={order._id} className="border border-border rounded-lg overflow-hidden">
                   {/* Header */}
@@ -93,9 +93,16 @@ const Orders: React.FC = () => {
                         <p className="font-medium">${order.total.toFixed(2)}</p>
                       </div>
                     </div>
-                    <div className={cn('flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium', status.bg, status.color)}>
-                      <StatusIcon className="w-4 h-4" />
-                      {status.label}
+                    <div className="flex items-center gap-3">
+                      <Link to={`/track-order?id=${order._id}`}>
+                        <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+                          Track Order
+                        </button>
+                      </Link>
+                      <div className={cn('flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium', status.bg, status.color)}>
+                        <StatusIcon className="w-4 h-4" />
+                        {status.label}
+                      </div>
                     </div>
                   </div>
 

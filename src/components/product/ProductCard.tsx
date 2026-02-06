@@ -16,8 +16,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product._id);
 
-  const discount = product.compareAtPrice
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+  const discount = product.oldPrice
+    ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
     : 0;
 
   return (
@@ -26,11 +26,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
       <div className="relative aspect-[3/4] overflow-hidden bg-secondary rounded-lg mb-4">
         <Link to={`/product/${product.slug}`}>
           <img
-            src={product.images[0]}
+            src={product?.images?.[0] || '/placeholder.svg'}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {product.images[1] && (
+          {product?.images?.[1] && (
             <img
               src={product.images[1]}
               alt={product.name}
@@ -92,9 +92,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
           </h3>
           <div className="flex items-center gap-2">
             <span className="font-semibold">${product.price.toFixed(2)}</span>
-            {product.compareAtPrice && (
+            {product.oldPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${product.compareAtPrice.toFixed(2)}
+                ${product.oldPrice.toFixed(2)}
               </span>
             )}
           </div>

@@ -14,11 +14,13 @@ export interface User {
 }
 
 export interface Address {
+  fullName?: string;
   street: string;
   city: string;
   state: string;
   zipCode: string;
   country: string;
+  phone?: string;
 }
 
 export interface Product {
@@ -27,15 +29,29 @@ export interface Product {
   slug: string;
   description: string;
   price: number;
-  compareAtPrice?: number;
-  images: string[];
+  oldPrice?: number;
+  images: string[]; // Supports multiple images
+  video?: string;
   category: 'watches' | 'shoes' | 't-shirts' | 'shirts';
+  subCategory?: string;
   gender: 'men' | 'women' | 'unisex';
   sizes?: string[];
   colors?: ProductColor[];
   stock: number;
   featured: boolean;
   isActive: boolean;
+
+  // Additional Fields
+  hsnCode?: string;
+  brand?: string;
+  quality?: string;
+  tags?: string[];
+
+  // Meta Options
+  metaTitle?: string;
+  metaKeywords?: string;
+  metaDescription?: string;
+
   createdAt: string;
   updatedAt: string;
 }

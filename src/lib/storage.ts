@@ -67,7 +67,7 @@ export const updateUser = (userId: string, updates: Partial<User>): User | null 
   const users = getUsers();
   const index = users.findIndex(u => u._id === userId);
   if (index === -1) return null;
-  
+
   users[index] = { ...users[index], ...updates, updatedAt: new Date().toISOString() };
   setUsers(users);
   return users[index];
@@ -111,7 +111,7 @@ export const updateProduct = (productId: string, updates: Partial<Product>): Pro
   const products = getProducts();
   const index = products.findIndex(p => p._id === productId);
   if (index === -1) return null;
-  
+
   products[index] = { ...products[index], ...updates, updatedAt: new Date().toISOString() };
   setProducts(products);
   return products[index];
@@ -158,7 +158,7 @@ export const updateCartItem = (itemId: string, quantity: number): CartItem | nul
   const cart = getCart();
   const index = cart.findIndex(item => item._id === itemId);
   if (index === -1) return null;
-  
+
   if (quantity <= 0) {
     cart.splice(index, 1);
   } else {
@@ -236,7 +236,7 @@ export const updateOrderStatus = (orderId: string, status: Order['status']): Ord
   const orders = getOrders();
   const index = orders.findIndex(o => o._id === orderId);
   if (index === -1) return null;
-  
+
   orders[index] = { ...orders[index], status, updatedAt: new Date().toISOString() };
   setOrders(orders);
   return orders[index];
@@ -253,6 +253,139 @@ export const getCartTotals = () => {
   const shipping = subtotal > 100 ? 0 : 10;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
-  
+
   return { subtotal, shipping, tax, total, itemCount: cart.length };
+};
+
+// Analytics functions
+export const getAnalytics = () => {
+  const orders = getOrders();
+  const products = getProducts();
+  const users = getUsers();
+
+  // Calculate totals
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalOrders = orders.length;
+  const totalCustomers = users.length;
+  const totalProducts = products.length;
+
+  // Calculate monthly revenue (mock data for now)
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthlyRevenue = months.map((month, index) => ({
+    name: month,
+    value: Math.floor(Math.random() * 10000) + 5000,
+  }));
+
+  // Calculate monthly orders (mock data for now)
+  const monthlyOrders = months.map((month, index) => ({
+    name: month,
+    value: Math.floor(Math.random() * 100) + 20,
+  }));
+
+  // Calculate category performance (mock data for now)
+  const categories = ['watches', 'shoes', 't-shirts', 'shirts'];
+  const categoryPerformance = categories.map(category => ({
+    name: category.charAt(0).toUpperCase() + category.slice(1),
+    value: Math.floor(Math.random() * 5000) + 1000,
+  }));
+
+  // Get recent orders
+  const recentOrders = [...orders].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  ).slice(0, 5);
+
+  return {
+    totalRevenue,
+    totalOrders,
+    totalCustomers,
+    totalProducts,
+    monthlyRevenue,
+    monthlyOrders,
+    categoryPerformance,
+    recentOrders
+  };
+};
+
+// Initialize default data if needed
+export const initializeDefaultData = () => {
+  // Check if users exist, if not, create a default admin user
+  const users = getUsers();
+  if (users.length === 0) {
+    createUser({
+      email: 'admin@laceup.com',
+      password: 'admin123',
+      firstName: 'Admin',
+      lastName: 'User',
+      role: 'admin',
+    });
+  }
+
+  // Check if categories exist, if not, create default categories
+  const categories = getCategories();
+  if (categories.length === 0) {
+    const defaultCategories: Omit<Category, '_id'>[] = [
+      {
+        name: 'Watches',
+        slug: 'watches',
+        description: 'Premium collection of watches',
+        image: '',
+        isActive: true
+      },
+      {
+        name: 'Shoes',
+        slug: 'shoes',
+        description: 'Comfortable and stylish shoes',
+        image: '',
+        isActive: true
+      },
+      {
+        name: 'T-Shirts',
+        slug: 't-shirts',
+        description: 'Casual wear t-shirts',
+        image: '',
+        isActive: true
+      },
+      {
+        name: 'Shirts',
+        slug: 'shirts',
+        description: 'Formal and casual shirts',
+        image: '',
+        isActive: true
+      }
+    ];
+
+    defaultCategories.forEach(category => {
+      createCategory(category);
+    });
+  }
+};
+
+// Create category function (added for completeness)
+export const createCategory = (categoryData: Omit<Category, '_id'>): Category => {
+  const categories = getCategories();
+  const newCategory: Category = {
+    ...categoryData,
+    _id: generateId(),
+  };
+  categories.push(newCategory);
+  setCategories(categories);
+  return newCategory;
+};
+
+export const updateCategory = (categoryId: string, updates: Partial<Category>): Category | null => {
+  const categories = getCategories();
+  const index = categories.findIndex(c => c._id === categoryId);
+  if (index === -1) return null;
+
+  categories[index] = { ...categories[index], ...updates };
+  setCategories(categories);
+  return categories[index];
+};
+
+export const deleteCategory = (categoryId: string): boolean => {
+  const categories = getCategories();
+  const filtered = categories.filter(c => c._id !== categoryId);
+  if (filtered.length === categories.length) return false;
+  setCategories(filtered);
+  return true;
 };
