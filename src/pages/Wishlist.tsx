@@ -65,7 +65,7 @@ const Wishlist: React.FC = () => {
                 <h3 className="font-medium group-hover:text-accent transition-colors line-clamp-1">
                   {item.product.name}
                 </h3>
-                <p className="font-semibold mt-1">${item.product.price.toFixed(2)}</p>
+                <p className="font-semibold mt-1">₹{item.product.price.toFixed(2)}</p>
               </Link>
             </div>
           ))}

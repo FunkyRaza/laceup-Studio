@@ -18,8 +18,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product._id);
 
-  const discount = product.compareAtPrice
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+  const discount = product.oldPrice
+    ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
     : 0;
 
   // Generate random rating for demo (4.0-5.0)
@@ -38,12 +38,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
       <div className="relative aspect-[4/5] overflow-hidden bg-secondary/30">
         <Link to={`/product/${product.slug}`} className="block h-full">
           <img
-            src={product.images[0]}
+            src={product?.images?.[0] || '/placeholder.svg'}
             alt={product.name}
             className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
             loading="lazy"
           />
-          {product.images[1] && (
+          {product?.images?.[1] && (
             <img
               src={product.images[1]}
               alt={`${product.name} - 2`}
@@ -56,7 +56,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
         {/* Premium Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           {discount > 0 && (
-            <Badge 
+            <Badge
               className={cn(
                 'px-3 py-1.5 text-xs font-bold rounded-full shadow-lg',
                 'bg-gradient-to-r from-destructive to-destructive/80 text-destructive-foreground',
@@ -67,7 +67,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
             </Badge>
           )}
           {product.featured && (
-            <Badge 
+            <Badge
               className={cn(
                 'px-3 py-1.5 text-xs font-bold rounded-full shadow-lg',
                 'bg-gradient-to-r from-amber-500 to-amber-600 text-amber-50',
@@ -78,7 +78,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
             </Badge>
           )}
           {discount > 15 && (
-            <Badge 
+            <Badge
               className={cn(
                 'px-3 py-1.5 text-xs font-bold rounded-full shadow-lg',
                 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-emerald-50',
@@ -102,8 +102,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
             className={cn(
               'w-10 h-10 rounded-full shadow-lg backdrop-blur-sm border-0',
               'transition-all duration-300 hover:scale-110 hover:shadow-xl',
-              isWishlisted 
-                ? 'bg-destructive/90 text-destructive-foreground hover:bg-destructive' 
+              isWishlisted
+                ? 'bg-destructive/90 text-destructive-foreground hover:bg-destructive'
                 : 'bg-background/80 text-foreground hover:bg-primary hover:text-primary-foreground'
             )}
           >
@@ -143,25 +143,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
       </div>
 
       {/* Product Info */}
-      <div className="p-5">
-        <Link to={`/product/${product.slug}`} className="block">
-          <div className="mb-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">
-              {product.category.replace('-', ' ')}
-            </p>
-            <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">
-              {product.name}
-            </h3>
-          </div>
-
-          {/* Price Section */}
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-xl font-bold text-foreground">
-              ${product.price.toFixed(2)}
-            </span>
-            {product.compareAtPrice && (
+      <Link to={`/product/${product.slug}`}>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+            {product.category.replace('-', ' ')}
+          </p>
+          <h3 className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-1">
+            {product.name}
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">₹{product.price.toFixed(2)}</span>
+            {product.oldPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${product.compareAtPrice.toFixed(2)}
+                ₹{product.oldPrice.toFixed(2)}
               </span>
             )}
             {discount > 0 && (
@@ -192,11 +186,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
               </div>
             </div>
           )}
-        </Link>
-      </div>
-
-      {/* Hover Glow Effect */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      </Link>
     </div>
+
+      {/* Hover Glow Effect */ }
+  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+    </div >
   );
 };

@@ -26,6 +26,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = (email: string, password: string): boolean => {
+    // Check for static admin credentials
+    if (email === 'admin@laceup.com' && password === 'admin123') {
+      const adminUser = {
+        _id: 'admin_user_id',
+        email: 'admin@laceup.com',
+        password: 'admin123',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      setUser(adminUser);
+      setCurrentUser(adminUser);
+      toast.success('Welcome to Admin Dashboard!');
+      return true;
+    }
+    
+    // Regular user login
     const foundUser = findUserByEmail(email);
     if (foundUser && foundUser.password === password) {
       setUser(foundUser);
