@@ -30,10 +30,8 @@ const Shop: React.FC = () => {
   const categoryFilter = searchParams.get('category') || 'all';
   const genderFilter = searchParams.get('gender') || 'all';
   const sortBy = searchParams.get('sort') || 'newest';
-  const priceRange = {
-    min: Number(searchParams.get('minPrice')) || 0,
-    max: Number(searchParams.get('maxPrice')) || 1000,
-  };
+  const minPrice = Number(searchParams.get('minPrice')) || 0;
+  const maxPrice = Number(searchParams.get('maxPrice')) || 1000;
 
   useEffect(() => {
     setLoading(true);
@@ -64,9 +62,9 @@ const Shop: React.FC = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
-        p => p.name.toLowerCase().includes(query) || 
-             p.description.toLowerCase().includes(query) ||
-             p.category.toLowerCase().includes(query)
+        p => p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query)
       );
     }
 
@@ -81,7 +79,7 @@ const Shop: React.FC = () => {
     }
 
     // Price
-    result = result.filter(p => p.price >= priceRange.min && p.price <= priceRange.max);
+    result = result.filter(p => p.price >= minPrice && p.price <= maxPrice);
 
     // Sort
     switch (sortBy) {
@@ -100,7 +98,7 @@ const Shop: React.FC = () => {
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, genderFilter, sortBy, priceRange]);
+  }, [products, searchQuery, categoryFilter, genderFilter, sortBy, minPrice, maxPrice]);
 
   const hasActiveFilters = categoryFilter !== 'all' || genderFilter !== 'all' || searchQuery;
 

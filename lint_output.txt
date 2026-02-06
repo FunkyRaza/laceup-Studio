@@ -3,21 +3,13 @@
 > eslint .
 
 
-C:\Ahmed Raza\laceup-Studio\src\components\admin\AdminLayout.tsx
-  6:11  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
-- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
-- If you want a type meaning "any object", you probably want `object` instead.
-- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
-
 C:\Ahmed Raza\laceup-Studio\src\components\admin\ui\ModernTable.tsx
+   3:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    6:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   6:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  12:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  15:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 C:\Ahmed Raza\laceup-Studio\src\components\admin\ui\ProfessionalForm.tsx
-  16:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  31:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   34:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 C:\Ahmed Raza\laceup-Studio\src\components\ui\badge.tsx
@@ -56,15 +48,11 @@ C:\Ahmed Raza\laceup-Studio\src\context\CartContext.tsx
 C:\Ahmed Raza\laceup-Studio\src\context\WishlistContext.tsx
   71:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
 
-C:\Ahmed Raza\laceup-Studio\src\pages\Login.tsx
-  18:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
 C:\Ahmed Raza\laceup-Studio\src\pages\Shop.tsx
   33:9  warning  The 'priceRange' object makes the dependencies of useMemo Hook (at line 103) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'priceRange' in its own useMemo() Hook  react-hooks/exhaustive-deps
 
 C:\Ahmed Raza\laceup-Studio\src\pages\admin\Analytics.tsx
-  275:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  326:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 C:\Ahmed Raza\laceup-Studio\src\pages\admin\Orders.tsx
    44:40   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -81,5 +69,5 @@ C:\Ahmed Raza\laceup-Studio\src\pages\admin\Products.tsx
 C:\Ahmed Raza\laceup-Studio\tailwind.config.ts
   102:13  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
 
-Γ£û 33 problems (22 errors, 11 warnings)
+Γ£û 28 problems (17 errors, 11 warnings)
 

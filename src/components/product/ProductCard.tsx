@@ -144,53 +144,55 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
 
       {/* Product Info */}
       <Link to={`/product/${product.slug}`}>
-        <div className="space-y-1">
+        <div className="p-4 space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">
-            {product.category.replace('-', ' ')}
+            {product.category?.replace('-', ' ') || 'Category'}
           </p>
-          <h3 className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-1">
+          <h3 className="font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
             {product.name}
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">₹{product.price.toFixed(2)}</span>
-            {product.oldPrice && (
-              <span className="text-sm text-muted-foreground line-through">
-                ₹{product.oldPrice.toFixed(2)}
-              </span>
-            )}
-            {discount > 0 && (
-              <span className="text-xs font-semibold text-destructive">
-                Save ${((product.compareAtPrice || 0) - product.price).toFixed(2)}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-lg">₹{product.price.toFixed(2)}</span>
+              {product.oldPrice && (
+                <span className="text-sm text-muted-foreground line-through">
+                  ₹{product.oldPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+            {discount > 0 && product.oldPrice && (
+              <span className="text-xs font-bold text-destructive px-2 py-0.5 bg-destructive/10 rounded">
+                Save ₹{(product.oldPrice - product.price).toFixed(2)}
               </span>
             )}
           </div>
 
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Colors:</span>
+            <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Colors:</span>
               <div className="flex gap-1.5">
                 {product.colors.slice(0, 4).map((color) => (
                   <div
                     key={color.name}
-                    className="w-5 h-5 rounded-full border-2 border-border shadow-sm hover:scale-110 transition-transform"
+                    className="w-4 h-4 rounded-full border border-border shadow-sm hover:scale-110 transition-transform cursor-pointer"
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                   />
                 ))}
                 {product.colors.length > 4 && (
-                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground font-bold">
+                  <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[8px] text-muted-foreground font-bold">
                     +{product.colors.length - 4}
                   </div>
                 )}
               </div>
             </div>
           )}
+        </div>
       </Link>
-    </div>
 
-      {/* Hover Glow Effect */ }
-  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-    </div >
+      {/* Hover Glow Effect */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+    </div>
   );
 };
