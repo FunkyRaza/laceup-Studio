@@ -9,6 +9,7 @@ export interface User {
   phone?: string;
   address?: Address;
   role: 'customer' | 'admin';
+  avatar?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,8 +53,21 @@ export interface Product {
   metaKeywords?: string;
   metaDescription?: string;
 
+  reviews?: Review[];
+  rating?: number;
+
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Review {
+  _id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
 
 export interface ProductColor {

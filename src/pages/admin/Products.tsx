@@ -253,11 +253,11 @@ const Products = () => {
 
                       {/* Prices */}
                       <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">New Price ($) <span className="text-red-500">*</span></label>
+                        <label className="text-sm font-semibold text-gray-700">New Price (₹) <span className="text-red-500">*</span></label>
                         <Input type="number" name="price" value={formData.price} onChange={handleInputChange} className="bg-gray-50 border-gray-200" min="0" required />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">Old Price ($)</label>
+                        <label className="text-sm font-semibold text-gray-700">Old Price (₹)</label>
                         <Input type="number" name="oldPrice" value={formData.oldPrice} onChange={handleInputChange} className="bg-gray-50 border-gray-200" min="0" />
                       </div>
 
@@ -439,7 +439,7 @@ const Products = () => {
                     <TableCell className="font-medium text-gray-900">{p.name}</TableCell>
                     <TableCell className="capitalize text-gray-500">{p.category}</TableCell>
                     <TableCell className="text-gray-500">{p.brand || '-'}</TableCell>
-                    <TableCell className="font-medium text-gray-900">${p.price}</TableCell>
+                    <TableCell className="font-medium text-gray-900">₹{p.price}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}`}>
                         {p.stock} in stock

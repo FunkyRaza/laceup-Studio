@@ -133,8 +133,8 @@ const TrackOrder = () => {
                                             className="absolute top-1/2 left-0 h-1 bg-blue-600 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out"
                                             style={{
                                                 width: `${order.status === 'delivered' ? 100 :
-                                                        order.status === 'shipped' ? 66 :
-                                                            order.status === 'processing' ? 33 : 0
+                                                    order.status === 'shipped' ? 66 :
+                                                        order.status === 'processing' ? 33 : 0
                                                     }%`
                                             }}
                                         />
@@ -197,13 +197,13 @@ const TrackOrder = () => {
                                                             <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.name}</p>
                                                             <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                                                         </div>
-                                                        <p className="text-sm font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                                                        <p className="text-sm font-medium text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
                                                     </div>
                                                 ))}
                                             </div>
                                             <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
                                                 <span className="font-semibold text-gray-900">Total Amount</span>
-                                                <span className="text-lg font-bold text-blue-600">${order.total.toFixed(2)}</span>
+                                                <span className="text-lg font-bold text-blue-600">₹{order.total.toFixed(2)}</span>
                                             </div>
                                         </div>
                                     </div>

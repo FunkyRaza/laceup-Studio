@@ -31,8 +31,9 @@ const Settings = () => {
     confirmPassword: '',
     siteName: 'LACEUP Admin',
     siteDescription: 'Premium e-commerce platform',
-    currency: 'USD',
-    timezone: 'UTC',
+    language: 'en',
+    currency: 'INR',
+    timezone: 'UTC-5',
     theme: 'dark'
   });
 
@@ -260,10 +261,9 @@ const Settings = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-gray-200">
-                        <SelectItem value="USD">US Dollar (USD)</SelectItem>
+                        <SelectItem value="INR">Indian Rupee (INR)</SelectItem>
                         <SelectItem value="EUR">Euro (EUR)</SelectItem>
                         <SelectItem value="GBP">British Pound (GBP)</SelectItem>
-                        <SelectItem value="JPY">Japanese Yen (JPY)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

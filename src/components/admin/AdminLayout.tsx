@@ -3,9 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
 
-interface AdminLayoutProps { }
-
-const AdminLayout: React.FC<AdminLayoutProps> = () => {
+const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (

@@ -13,7 +13,7 @@ interface FormField {
 
 interface ProfessionalFormProps {
   fields: FormField[];
-  onSubmit: (data: Record<string, any>) => void;
+  onSubmit: (data: Record<string, unknown>) => void;
   submitText?: string;
   cancelText?: string;
   onCancel?: () => void;
@@ -28,7 +28,7 @@ const ProfessionalForm: React.FC<ProfessionalFormProps> = ({
   onCancel,
   loading = false
 }) => {
-  const [formData, setFormData] = React.useState<Record<string, any>>({});
+  const [formData, setFormData] = React.useState<Record<string, unknown>>({});
 
   React.useEffect(() => {
     const initialData: Record<string, any> = {};
@@ -56,7 +56,7 @@ const ProfessionalForm: React.FC<ProfessionalFormProps> = ({
         return (
           <select
             name={field.name}
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string | number) || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-primary focus:border-primary"
             required={field.required}
@@ -72,7 +72,7 @@ const ProfessionalForm: React.FC<ProfessionalFormProps> = ({
         return (
           <textarea
             name={field.name}
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string | number) || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             rows={4}
@@ -85,7 +85,7 @@ const ProfessionalForm: React.FC<ProfessionalFormProps> = ({
           <input
             type={field.type || 'text'}
             name={field.name}
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string | number) || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-primary focus:border-primary"

@@ -6,12 +6,14 @@ import {
   Search,
   ChevronDown,
   LogOut,
-  User,
+  User as UserIcon,
   Moon,
   Sun
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
+
+import { useAuth } from '@/context/AuthContext';
 
 interface TopNavbarProps {
   sidebarOpen: boolean;
@@ -22,14 +24,11 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ sidebarOpen, setSidebarOpen }) =>
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('laceup_current_user');
+    logout();
     navigate('/login');
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -75,10 +74,16 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ sidebarOpen, setSidebarOpen }) =>
                 variant="ghost"
                 className="flex items-center space-x-3 p-1 pl-2 pr-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
               >
-                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
-                  <img src="https://github.com/shadcn.png" alt="Admin" className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.firstName} className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="h-4 w-4 text-gray-400" />
+                  )}
                 </div>
-                <span className="hidden md:inline text-gray-700 font-medium text-sm">Ingredia Nutritia</span>
+                <span className="hidden md:inline text-gray-700 font-medium text-sm">
+                  {user ? `${user.firstName} ${user.lastName}` : 'Admin'}
+                </span>
                 <ChevronDown className="h-3 w-3 hidden md:inline" />
               </Button>
 

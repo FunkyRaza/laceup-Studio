@@ -18,11 +18,10 @@ import {
   Line
 } from 'recharts';
 import {
-  DollarSign,
+  TrendingUp,
   ShoppingCart,
   Users,
   Package,
-  TrendingUp,
   Calendar,
   Download
 } from 'lucide-react';
@@ -64,25 +63,51 @@ const Analytics = () => {
     const totalCustomers = users.length;
     const totalProducts = products.length;
 
-    // Mock monthly revenue data
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthlyRevenue = months.map(month => ({
-      name: month,
-      revenue: Math.floor(Math.random() * 10000) + 5000,
-    }));
+    // Real monthly revenue data
+    const last12Months = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date();
+      d.setMonth(d.getMonth() - (11 - i));
+      return d.toLocaleString('en-US', { month: 'short' });
+    });
 
-    // Mock monthly orders data
-    const monthlyOrders = months.map(month => ({
-      name: month,
-      orders: Math.floor(Math.random() * 100) + 20,
-    }));
+    const monthlyRevenue = last12Months.map(month => {
+      const monthOrders = orders.filter(o =>
+        new Date(o.createdAt).toLocaleString('en-US', { month: 'short' }) === month
+      );
+      return {
+        name: month,
+        revenue: monthOrders.reduce((sum, o) => sum + o.total, 0),
+      };
+    });
 
-    // Mock category performance
-    const categories = ['watches', 'shoes', 't-shirts', 'shirts'];
-    const categoryPerformance = categories.map(category => ({
-      name: category.charAt(0).toUpperCase() + category.slice(1),
-      revenue: Math.floor(Math.random() * 5000) + 1000,
-      orders: Math.floor(Math.random() * 50) + 5,
+    // Real monthly orders data
+    const monthlyOrders = last12Months.map(month => {
+      const monthOrders = orders.filter(o =>
+        new Date(o.createdAt).toLocaleString('en-US', { month: 'short' }) === month
+      );
+      return {
+        name: month,
+        orders: monthOrders.length,
+      };
+    });
+
+    // Real category performance
+    const categoryRevenue: Record<string, { revenue: number, orders: number }> = {};
+    orders.forEach(order => {
+      order.items.forEach(item => {
+        // Find product to get category
+        const product = products.find(p => p._id === item.productId);
+        const cat = product?.category || 'Other';
+        if (!categoryRevenue[cat]) categoryRevenue[cat] = { revenue: 0, orders: 0 };
+        categoryRevenue[cat].revenue += item.price * item.quantity;
+        categoryRevenue[cat].orders += 1;
+      });
+    });
+
+    const categoryPerformance = Object.keys(categoryRevenue).map(cat => ({
+      name: cat.charAt(0).toUpperCase() + cat.slice(1),
+      revenue: categoryRevenue[cat].revenue,
+      orders: categoryRevenue[cat].orders,
     }));
 
     // Recent orders
@@ -90,8 +115,21 @@ const Analytics = () => {
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     ).slice(0, 5);
 
-    // Calculate revenue growth (mock data)
-    const revenueGrowth = 12.5;
+    // Calculate revenue growth (Simplified: comparing this month vs last month)
+    const thisMonth = new Date().toLocaleString('en-US', { month: 'short' });
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const lastMonthName = lastMonth.toLocaleString('en-US', { month: 'short' });
+
+    const currentMonthRevenue = monthlyRevenue.find(m => m.name === thisMonth)?.revenue || 0;
+    const previousMonthRevenue = monthlyRevenue.find(m => m.name === lastMonthName)?.revenue || 0;
+
+    let revenueGrowth = 0;
+    if (previousMonthRevenue > 0) {
+      revenueGrowth = Number(((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100).toFixed(1));
+    } else if (currentMonthRevenue > 0) {
+      revenueGrowth = 100;
+    }
 
     setAnalytics({
       totalRevenue,
@@ -100,11 +138,34 @@ const Analytics = () => {
       totalProducts,
       monthlyRevenue,
       monthlyOrders,
-      categoryPerformance,
+      categoryPerformance: categoryPerformance.length > 0 ? categoryPerformance : [
+        { name: 'Watches', revenue: 0, orders: 0 },
+        { name: 'Shoes', revenue: 0, orders: 0 },
+        { name: 'Apparel', revenue: 0, orders: 0 }
+      ],
       recentOrders,
       revenueGrowth
     });
   }, [dateRange]);
+
+  const handleExport = () => {
+    const orders = getOrders();
+    const csvHeader = "Order ID,Customer,Total,Status,Date\n";
+    const csvRows = orders.map(o =>
+      `${o._id},${o.customerDetails.firstName} ${o.customerDetails.lastName},${o.total},${o.status},${o.createdAt}`
+    ).join("\n");
+
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `analytics_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast.success("Analytics exported successfully!");
+  };
 
   // Colors for charts
   const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
@@ -128,7 +189,7 @@ const Analytics = () => {
               <SelectItem value="year">Last Year</SelectItem>
             </SelectContent>
           </Select>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+          <Button onClick={handleExport} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -141,11 +202,11 @@ const Analytics = () => {
           <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gray-50/50 rounded-t-xl border-b border-gray-50">
             <CardTitle className="text-sm font-medium text-gray-500">Total Revenue</CardTitle>
             <div className="p-2 bg-green-50 rounded-full">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gray-900">${analytics.totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-gray-900">₹{analytics.totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded">+{analytics.revenueGrowth}% from last period</p>
           </CardContent>
         </Card>
@@ -206,10 +267,11 @@ const Analytics = () => {
                 <AreaChart data={analytics.monthlyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                   <XAxis dataKey="name" stroke="#9CA3AF" tickLine={false} axisLine={false} dy={10} />
-                  <YAxis stroke="#9CA3AF" tickLine={false} axisLine={false} dx={-10} tickFormatter={(value) => `$${value}`} />
+                  <YAxis stroke="#9CA3AF" tickLine={false} axisLine={false} dx={-10} tickFormatter={(value) => `₹${value}`} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', color: '#111827', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     itemStyle={{ color: '#111827' }}
+                    formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Area
@@ -260,7 +322,7 @@ const Analytics = () => {
                   </Pie>
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', color: '#111827', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value) => [`$${value}`, 'Revenue']}
+                    formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Revenue']}
                   />
                   <Legend verticalAlign="bottom" height={36} />
                 </PieChart>

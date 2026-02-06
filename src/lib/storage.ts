@@ -1,6 +1,6 @@
 // LocalStorage utilities with MongoDB-ready structure
 
-import { Product, User, Order, CartItem, WishlistItem, Category } from '@/types';
+import { Product, User, Order, CartItem, WishlistItem, Category, Review } from '@/types';
 
 const STORAGE_KEYS = {
   USERS: 'laceup_users',
@@ -123,6 +123,31 @@ export const deleteProduct = (productId: string): boolean => {
   if (filtered.length === products.length) return false;
   setProducts(filtered);
   return true;
+};
+
+export const addReview = (productId: string, reviewData: Omit<Review, '_id' | 'createdAt'>): Review | null => {
+  const products = getProducts();
+  const productIndex = products.findIndex(p => p._id === productId);
+  if (productIndex === -1) return null;
+
+  const newReview: Review = {
+    ...reviewData,
+    _id: generateId(),
+    createdAt: new Date().toISOString(),
+  };
+
+  const product = products[productIndex];
+  const reviews = product.reviews || [];
+  reviews.push(newReview);
+
+  // Update average rating
+  const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+  product.rating = Number((totalRating / reviews.length).toFixed(1));
+  product.reviews = reviews;
+  product.updatedAt = new Date().toISOString();
+
+  setProducts(products);
+  return newReview;
 };
 
 // Cart functions
