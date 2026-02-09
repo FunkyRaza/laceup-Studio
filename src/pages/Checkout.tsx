@@ -5,9 +5,9 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { createOrder } from '@/lib/storage';
+import api from '@/lib/api';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -50,13 +50,11 @@ const Checkout: React.FC = () => {
     );
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     setLoading(true);
 
-    // Simulate order processing
-    setTimeout(() => {
-      const order = createOrder({
-        userId: user?._id || 'guest',
+    try {
+      const orderData = {
         items: items.map(item => ({
           productId: item.productId,
           name: item.product.name,
@@ -64,13 +62,12 @@ const Checkout: React.FC = () => {
           quantity: item.quantity,
           size: item.size,
           color: item.color,
-          image: item.product.images[0],
+          image: getImageUrl(item.product.image || item.product.images[0]),
         })),
         subtotal,
         shipping,
         tax,
         total,
-        status: 'pending',
         shippingAddress: {
           street: shippingInfo.street,
           city: shippingInfo.city,
@@ -79,13 +76,19 @@ const Checkout: React.FC = () => {
           country: shippingInfo.country,
         },
         paymentMethod: 'card',
-      });
+      };
+
+      const { data: order } = await api.post('/orders', orderData);
 
       clearCart();
       toast.success('Order placed successfully!');
       navigate(`/orders?success=${order._id}`);
+    } catch (error) {
+      console.error('Order placement failed', error);
+      toast.error('Failed to place order');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const steps = [

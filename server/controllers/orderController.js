@@ -6,24 +6,45 @@ const Product = require('../models/Product');
 // @route   POST /api/orders
 // @access  Private
 const addOrderItems = asyncHandler(async (req, res) => {
-    const { items, paymentMethod, address, totalAmount } = req.body;
+    const {
+        items,
+        shippingAddress,
+        paymentMethod,
+        subtotal,
+        shipping,
+        tax,
+        total
+    } = req.body;
 
     if (items && items.length === 0) {
         res.status(400);
         throw new Error('No order items');
     } else {
+        const orderItems = items.map(item => ({
+            product: item.productId,
+            name: item.name,
+            image: item.image,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color
+        }));
+
         const order = new Order({
             user: req.user._id,
-            items,
+            items: orderItems,
+            shippingAddress,
             paymentMethod,
-            address,
-            totalAmount,
+            subtotal,
+            shipping,
+            tax,
+            total,
         });
 
         const createdOrder = await order.save();
 
         // Update Stock
-        for (const item of items) {
+        for (const item of orderItems) {
             const product = await Product.findById(item.product);
             if (product) {
                 product.stock -= item.quantity;
@@ -61,7 +82,7 @@ const getMyOrders = asyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Private/Admin
 const getOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find({}).populate('user', 'id name');
+    const orders = await Order.find({}).populate('user', 'id name email');
     res.json(orders);
 });
 
@@ -81,4 +102,19 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { addOrderItems, getOrderById, getMyOrders, getOrders, updateOrderStatus };
+// @desc    Delete an order
+// @route   DELETE /api/orders/:id
+// @access  Private/Admin
+const deleteOrder = asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+        await order.deleteOne();
+        res.json({ message: 'Order removed' });
+    } else {
+        res.status(404);
+        throw new Error('Order not found');
+    }
+});
+
+module.exports = { addOrderItems, getOrderById, getMyOrders, getOrders, updateOrderStatus, deleteOrder };

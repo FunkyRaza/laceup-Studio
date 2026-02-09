@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Package, Truck, CheckCircle, Clock, MapPin, ArrowRight } from 'lucide-react';
-import { getOrders } from '@/lib/storage';
+import api from '@/lib/api';
 import { Order } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { motion } from "framer-motion";
 
 const steps = [
@@ -33,19 +33,21 @@ const TrackOrder = () => {
         }
     }, [searchParams]);
 
-    const handleSearch = (idToSearch: string) => {
+    const handleSearch = async (idToSearch: string) => {
         if (!idToSearch) return;
 
         setLoading(true);
         setSearched(true);
 
-        // Simulate network delay for animation effect
-        setTimeout(() => {
-            const allOrders = getOrders();
-            const foundOrder = allOrders.find(o => o._id === idToSearch || o._id.includes(idToSearch));
+        try {
+            const { data: foundOrder } = await api.get(`/orders/${idToSearch}`);
             setOrder(foundOrder || null);
+        } catch (error) {
+            console.error('Track order failed', error);
+            setOrder(null);
+        } finally {
             setLoading(false);
-        }, 800);
+        }
     };
 
     const getStepStatus = (stepId: string, currentStatus: string) => {
@@ -192,7 +194,7 @@ const TrackOrder = () => {
                                             <div className="space-y-3">
                                                 {order.items.map((item, i) => (
                                                     <div key={i} className="flex gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                                        <img src={item.image} alt={item.name} className="w-12 h-12 rounded object-cover" />
+                                                        <img src={getImageUrl(item.image)} alt={item.name} className="w-12 h-12 rounded object-cover" />
                                                         <div className="flex-grow">
                                                             <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.name}</p>
                                                             <p className="text-xs text-gray-500">Qty: {item.quantity}</p>

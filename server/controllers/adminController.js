@@ -10,29 +10,39 @@ const generateToken = require('../utils/generateToken');
 // @access  Public
 const authAdmin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
+    console.log(`--- [AUTH DEBUG] Body: email=${email}, passLength=${password ? password.length : 0} ---`);
 
     const admin = await Admin.findOne({ email });
 
     if (admin) {
+        console.log(`--- [DEBUG] Admin Login Attempt: ${email} ---`);
+        console.log(`[DEBUG] Found Admin: ${admin.email}, Role: ${admin.role}`);
         const isMatch = await admin.comparePassword(password);
+        console.log(`[DEBUG] Password Match Result: ${isMatch}`);
+
         if (isMatch) {
+            console.log(`✅ [DEBUG] Login Success: ${email}`);
             res.json({
                 _id: admin._id,
                 name: admin.name,
                 email: admin.email,
                 role: admin.role,
                 permissions: admin.permissions,
-                token: generateToken(admin._id),
+                token: generateToken({
+                    adminId: admin._id,
+                    role: admin.role,
+                    permissions: admin.permissions
+                }),
             });
         } else {
-            console.log(`Auth failed for ${email}: Password mismatch`);
+            console.log(`❌ [DEBUG] Auth failed: Password mismatch for ${email}`);
             res.status(401);
-            throw new Error('Invalid email or password');
+            throw new Error(`DEBUG: Password mismatch for ${email}`);
         }
     } else {
-        console.log(`Auth failed for ${email}: Admin not found`);
+        console.log(`❌ [DEBUG] Auth failed: Admin not found - ${email}`);
         res.status(401);
-        throw new Error('Invalid email or password');
+        throw new Error(`DEBUG: Admin account not found for ${email}`);
     }
 });
 
@@ -146,4 +156,17 @@ const deleteAdmin = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { authAdmin, registerAdmin, getAdmins, getDashboardStats, updateAdminPermissions, deleteAdmin };
+// @desc    Get logged in admin profile
+// @route   GET /api/admin/me
+// @access  Private/Admin
+const getAdminProfile = asyncHandler(async (req, res) => {
+    const admin = await Admin.findById(req.user._id).select('-password');
+    if (admin) {
+        res.json(admin);
+    } else {
+        res.status(404);
+        throw new Error('Admin not found');
+    }
+});
+
+module.exports = { authAdmin, registerAdmin, getAdmins, getDashboardStats, updateAdminPermissions, deleteAdmin, getAdminProfile };

@@ -6,8 +6,8 @@ import { Footer } from '@/components/layout/Footer';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuth } from '@/context/AuthContext';
 import { Order } from '@/types';
-import { getUserOrders, getOrders } from '@/lib/storage';
-import { cn } from '@/lib/utils';
+import api from '@/lib/api';
+import { cn, getImageUrl } from '@/lib/utils';
 
 const statusConfig = {
   pending: { icon: Clock, color: 'text-warning', bg: 'bg-warning/10', label: 'Pending' },
@@ -25,13 +25,18 @@ const Orders: React.FC = () => {
   const successOrderId = searchParams.get('success');
 
   useEffect(() => {
-    if (user) {
-      setOrders(getUserOrders(user._id));
-    } else {
-      // Show all orders for guests (in a real app, this would be different)
-      setOrders(getOrders());
+    const fetchOrders = async () => {
+      try {
+        const { data } = await api.get('/orders/myorders');
+        setOrders(data);
+      } catch (error) {
+        console.error('Failed to fetch orders', error);
+      }
+    };
+    if (isAuthenticated) {
+      fetchOrders();
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
@@ -117,7 +122,7 @@ const Orders: React.FC = () => {
                         <div key={i} className="flex flex-col sm:flex-row gap-6 items-start">
                           <div className="relative group shrink-0">
                             <img
-                              src={item.image}
+                              src={getImageUrl(item.image)}
                               alt={item.name}
                               className="w-24 h-24 object-cover rounded-xl border border-gray-100 shadow-sm"
                             />

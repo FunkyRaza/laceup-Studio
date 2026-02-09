@@ -4,7 +4,7 @@ import { Heart, ShoppingBag } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -20,19 +20,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
     ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
     : 0;
 
+  const mainImage = getImageUrl(product.image || product.images?.[0]);
+  const secondImage = product.images?.[1] ? getImageUrl(product.images[1]) : null;
+  const categoryName = typeof product.category === 'object' ? product.category.name : product.category;
+
   return (
     <div className={cn('group relative animate-fade-in', className)}>
       {/* Image Container */}
       <div className="relative aspect-[3/4] overflow-hidden bg-secondary rounded-lg mb-4">
         <Link to={`/product/${product.slug}`}>
           <img
-            src={product?.images?.[0] || '/placeholder.svg'}
+            src={mainImage}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {product?.images?.[1] && (
+          {secondImage && (
             <img
-              src={product.images[1]}
+              src={secondImage}
               alt={product.name}
               className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             />
@@ -85,7 +89,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
       <Link to={`/product/${product.slug}`}>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">
-            {product.category.replace('-', ' ')}
+            {typeof product.category === 'object' ? product.category.name : product.category.replace('-', ' ')}
           </p>
           <h3 className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-1">
             {product.name}

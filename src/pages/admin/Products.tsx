@@ -41,66 +41,71 @@ import {
   Video
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  getProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct
-} from '@/lib/storage';
-import { Product } from '@/types';
+import api from '@/lib/api';
+import { cn, getImageUrl } from '@/lib/utils';
 
 const Products = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
 
   const [activeTab, setActiveTab] = useState("general");
 
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const [formData, setFormData] = useState<any>({
     name: '',
     description: '',
     price: 0,
     oldPrice: 0,
-    category: 'watches',
-    subCategory: '',
-    gender: 'unisex',
+    category: '',
+    gender: 'Unisex',
     stock: 0,
     featured: false,
     isActive: true,
-    hsnCode: '',
-    brand: '',
-    quality: '',
-    tags: [],
     images: [],
-    video: '',
-    metaTitle: '',
-    metaKeywords: '',
-    metaDescription: ''
   });
 
   const [tagsInput, setTagsInput] = useState('');
 
   // Load products
+  const fetchProducts = async () => {
+    try {
+      const { data } = await api.get('/products');
+      setProducts(data);
+      setFilteredProducts(data);
+    } catch (error) {
+      toast.error('Failed to fetch products');
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await api.get('/categories');
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchedProducts = getProducts();
-    setProducts(fetchedProducts);
-    setFilteredProducts(fetchedProducts);
+    fetchProducts();
+    fetchCategories();
   }, []);
 
   // Filter products based on search term
   useEffect(() => {
     const filtered = products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    // Check if it's a checkbox
     const checked = (e.target as HTMLInputElement).checked;
 
     setFormData(prev => ({
@@ -139,59 +144,61 @@ const Products = () => {
     }
   };
 
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Ensure required fields
-    if (!formData.name || !formData.price) {
-      toast.error("Name and Price are required!");
-      return;
-    }
+    try {
+      const payload = {
+        ...formData,
+        // Backend expects 'category' as ID string, ensure it's provided
+        image: formData.images?.[0] || '/placeholder.svg'
+      };
 
-    const payload = {
-      ...formData,
-      images: formData.images?.length ? formData.images : ['/placeholder.svg'], // Default image if none
-    } as any; // Cast for simplicity with partials
-
-    if (editingProduct) {
-      // Update existing product
-      const updatedProduct = updateProduct(editingProduct._id, payload);
-      if (updatedProduct) {
-        setProducts(prev => prev.map(p => p._id === editingProduct._id ? updatedProduct : p));
-        setFilteredProducts(prev => prev.map(p => p._id === editingProduct._id ? updatedProduct : p));
+      if (editingProduct) {
+        await api.put(`/products/${editingProduct._id}`, payload);
+        toast.success('Product updated successfully');
+      } else {
+        await api.post('/products', payload);
+        toast.success('Product created successfully');
       }
-    } else {
-      // Create new product
-      const newProduct = createProduct(payload);
-      setProducts(prev => [...prev, newProduct]);
-      setFilteredProducts(prev => [...prev, newProduct]);
-    }
 
-    resetForm();
-    setIsDialogOpen(false);
+      await fetchProducts();
+      resetForm();
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save product');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: any) => {
     setEditingProduct(product);
-    setFormData({ ...product });
+    setFormData({
+      ...product,
+      category: product.category?._id || product.category // Handle populated category
+    });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (productId: string) => {
+  const handleDelete = async (productId: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(productId);
-      setProducts(prev => prev.filter(p => p._id !== productId));
-      setFilteredProducts(prev => prev.filter(p => p._id !== productId));
+      try {
+        await api.delete(`/products/${productId}`);
+        toast.success('Product deleted');
+        fetchProducts();
+      } catch (error) {
+        toast.error('Failed to delete product');
+      }
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '', description: '', price: 0, oldPrice: 0, category: 'watches', subCategory: '',
-      gender: 'unisex', stock: 0, featured: false, isActive: true, hsnCode: '',
-      brand: '', quality: '', tags: [], images: [], video: '',
-      metaTitle: '', metaKeywords: '', metaDescription: ''
+      name: '', description: '', price: 0, oldPrice: 0, category: '',
+      gender: 'Unisex', stock: 0, featured: false, isActive: true,
+      images: [], tags: []
     });
     setEditingProduct(null);
     setActiveTab("general");
@@ -279,12 +286,11 @@ const Products = () => {
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Category</label>
                         <Select value={formData.category} onValueChange={(val) => handleSelectChange('category', val)}>
-                          <SelectTrigger className="bg-gray-50 border-gray-200"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="bg-gray-50 border-gray-200"><SelectValue placeholder="Select Category" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="watches">Watches</SelectItem>
-                            <SelectItem value="shoes">Shoes</SelectItem>
-                            <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                            <SelectItem value="shirts">Shirts</SelectItem>
+                            {categories.map((c) => (
+                              <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -354,9 +360,9 @@ const Products = () => {
                         <p className="text-xs text-gray-500">Add URLs for now. Drag & Drop upload requires backend storage.</p>
 
                         <div className="grid grid-cols-4 gap-4 mt-4">
-                          {formData.images?.map((url, i) => (
+                          {formData.images?.map((url: string, i: number) => (
                             <div key={i} className="relative group border border-gray-200 rounded-lg overflow-hidden">
-                              <img src={url} alt={`Preview ${i}`} className="w-full h-24 object-cover" />
+                              <img src={getImageUrl(url)} alt={`Preview ${i}`} className="w-full h-24 object-cover" />
                               <button type="button" onClick={() => removeItemFromArray('images', i)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X className="w-4 h-4" />
                               </button>
@@ -435,9 +441,17 @@ const Products = () => {
               <TableBody>
                 {filteredProducts.map(p => (
                   <TableRow key={p._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <TableCell className="pl-6"><img src={p.images?.[0]} alt="" className="w-10 h-10 object-cover rounded-md bg-gray-100 border border-gray-200" /></TableCell>
+                    <TableCell className="pl-6">
+                      <img
+                        src={getImageUrl(p.image || p.images?.[0])}
+                        alt=""
+                        className="w-10 h-10 object-cover rounded-md bg-gray-100 border border-gray-200"
+                      />
+                    </TableCell>
                     <TableCell className="font-medium text-gray-900">{p.name}</TableCell>
-                    <TableCell className="capitalize text-gray-500">{p.category}</TableCell>
+                    <TableCell className="capitalize text-gray-500">
+                      {typeof p.category === 'object' ? p.category?.name : p.category}
+                    </TableCell>
                     <TableCell className="text-gray-500">{p.brand || '-'}</TableCell>
                     <TableCell className="font-medium text-gray-900">₹{p.price}</TableCell>
                     <TableCell>

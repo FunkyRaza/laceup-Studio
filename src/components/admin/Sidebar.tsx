@@ -22,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+    { icon: Tag, label: 'Categories', path: '/admin/categories' },
     { icon: ShoppingCart, label: 'Customers Orders', path: '/admin/orders' },
     { icon: Users, label: 'Customers List', path: '/admin/customers' },
     { icon: Package, label: 'Products', path: '/admin/products' },

@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@/types';
-import { getCurrentUser, setCurrentUser, findUserByEmail, createUser } from '@/lib/storage';
+import api from '@/lib/api';
 import { toast } from 'sonner';
+import { User } from '@/types';
+
 
 interface AuthContextType {
-  user: User | null;
+  user: any | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string) => boolean;
-  signup: (email: string, password: string, firstName: string, lastName: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, firstName: string, lastName: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
 }
@@ -16,79 +17,55 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    const storedUser = getCurrentUser();
+    const storedUser = localStorage.getItem('laceup_current_user');
     if (storedUser) {
-      setUser(storedUser);
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
-  const login = (email: string, password: string): boolean => {
-    // Check for static admin credentials
-    if (email === 'admin@laceup.com' && password === 'admin123') {
-      const adminUser = {
-        _id: 'admin_user_id',
-        email: 'admin@laceup.com',
-        password: 'admin123',
-        firstName: 'Admin',
-        lastName: 'User',
-        role: 'admin' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setUser(adminUser);
-      setCurrentUser(adminUser);
-      toast.success('Welcome to Admin Dashboard!');
-      return true;
-    }
-    
-    // Regular user login
-    const foundUser = findUserByEmail(email);
-    if (foundUser && foundUser.password === password) {
-      setUser(foundUser);
-      setCurrentUser(foundUser);
-      toast.success(`Welcome back, ${foundUser.firstName}!`);
-      return true;
-    }
-    toast.error('Invalid email or password');
-    return false;
-  };
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      setUser(data);
+      localStorage.setItem('laceup_current_user', JSON.stringify(data));
 
-  const signup = (email: string, password: string, firstName: string, lastName: string): boolean => {
-    const existingUser = findUserByEmail(email);
-    if (existingUser) {
-      toast.error('An account with this email already exists');
+      const isManageable = data.role === 'admin' || data.role === 'superadmin';
+      toast.success(isManageable ? 'Welcome to Admin Dashboard!' : `Welcome back, ${data.name}!`);
+      return true;
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || error.message || 'Invalid email or password';
+      toast.error(errorMsg);
       return false;
     }
+  };
 
-    const newUser = createUser({
-      email,
-      password,
-      firstName,
-      lastName,
-      role: 'customer',
-    });
-
-    setUser(newUser);
-    setCurrentUser(newUser);
-    toast.success('Account created successfully!');
-    return true;
+  const signup = async (email: string, password: string, firstName: string, lastName: string): Promise<boolean> => {
+    try {
+      const { data } = await api.post('/users', { name: `${firstName} ${lastName}`, email, password });
+      setUser(data);
+      localStorage.setItem('laceup_current_user', JSON.stringify(data));
+      toast.success('Account created successfully!');
+      return true;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Account creation failed');
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
-    setCurrentUser(null);
+    localStorage.removeItem('laceup_current_user');
     toast.success('You have been logged out');
   };
 
   const updateProfile = (updates: Partial<User>) => {
     if (user) {
-      const updatedUser = { ...user, ...updates, updatedAt: new Date().toISOString() };
+      const updatedUser = { ...user, ...updates };
       setUser(updatedUser);
-      setCurrentUser(updatedUser);
+      localStorage.setItem('laceup_current_user', JSON.stringify(updatedUser));
       toast.success('Profile updated successfully');
     }
   };
@@ -98,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin',
+        isAdmin: user?.role === 'admin' || user?.role === 'superadmin',
         login,
         signup,
         logout,

@@ -7,24 +7,17 @@ dotenv.config();
 
 connectDB();
 
-const checkAdmin = async () => {
+const checkProducts = async () => {
     try {
-        const admin = await Admin.findOne({ email: 'admin@gmail.com' });
-        if (admin) {
-            console.log('--- Admin Found ---');
-            console.log(`ID: ${admin._id}`);
-            console.log(`Email: ${admin.email}`);
-            console.log(`Role: ${admin.role}`);
-            console.log(`Password Hash: ${admin.password}`);
-            console.log(`Permissions: ${JSON.stringify(admin.permissions, null, 2)}`);
-
-            // Test hash comparison
-            const bcrypt = require('bcryptjs');
-            const match = await bcrypt.compare('admin123', admin.password);
-            console.log(`Password 'admin123' match: ${match}`);
-        } else {
-            console.log('Admin NOT found in database.');
-        }
+        const Product = require('./models/Product');
+        const products = await Product.find({});
+        console.log(`--- Products Found (${products.length}) ---`);
+        products.forEach(p => {
+            console.log(`Name: ${p.name}`);
+            console.log(`Image: ${p.image}`);
+            console.log(`Images: ${JSON.stringify(p.images)}`);
+            console.log('---');
+        });
         process.exit();
     } catch (error) {
         console.error(`Error: ${error.message}`);
@@ -32,4 +25,4 @@ const checkAdmin = async () => {
     }
 };
 
-checkAdmin();
+checkProducts();

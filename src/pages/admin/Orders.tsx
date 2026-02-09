@@ -35,10 +35,12 @@ import {
   Eye,
   Package,
   Calendar,
-  User
+  User,
+  Trash2
 } from 'lucide-react';
-import { getOrders, updateOrderStatus, getUsers } from '@/lib/storage';
-import { Order, User as UserType } from '@/types';
+import api from '@/lib/api';
+import { toast } from 'sonner';
+import { getImageUrl } from '@/lib/utils';
 
 const Orders = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -46,20 +48,26 @@ const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   // Load orders
-  useEffect(() => {
-    const fetchedOrders = getOrders();
-    const enrichedOrders = fetchedOrders.map(order => {
-      const user = getUsers().find((u: UserType) => u._id === order.userId);
-      return {
+  const fetchOrders = async () => {
+    try {
+      const { data } = await api.get('/orders');
+      const enrichedOrders = data.map((order: any) => ({
         ...order,
-        customerName: user ? `${user.firstName} ${user.lastName} ` : 'Unknown Customer'
-      };
-    });
+        customerName: order.user?.name || 'Unknown Customer',
+        items: order.items || []
+      }));
+      setOrders(enrichedOrders);
+      setFilteredOrders(enrichedOrders);
+    } catch (error) {
+      toast.error('Failed to fetch orders');
+    }
+  };
 
-    setOrders(enrichedOrders);
-    setFilteredOrders(enrichedOrders);
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
   // Filter orders based on search term and status
@@ -70,7 +78,7 @@ const Orders = () => {
       result = result.filter(order =>
         order._id.includes(searchTerm) ||
         order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.shippingAddress.city.toLowerCase().includes(searchTerm.toLowerCase())
+        (order.address?.city && order.address.city.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -81,15 +89,25 @@ const Orders = () => {
     setFilteredOrders(result);
   }, [searchTerm, statusFilter, orders]);
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
-    const updatedOrder = updateOrderStatus(orderId, newStatus as any);
-    if (updatedOrder) {
-      setOrders(prev => prev.map(order =>
-        order._id === orderId ? { ...order, ...updatedOrder } : order
-      ));
-      setFilteredOrders(prev => prev.map(order =>
-        order._id === orderId ? { ...order, ...updatedOrder } : order
-      ));
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      await api.put(`/orders/${orderId}/status`, { status: newStatus });
+      toast.success('Order status updated');
+      fetchOrders();
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleDelete = async (orderId: string) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      try {
+        await api.delete(`/orders/${orderId}`);
+        toast.success('Order deleted');
+        fetchOrders();
+      } catch (error) {
+        toast.error('Failed to delete order');
+      }
     }
   };
 
@@ -193,7 +211,7 @@ const Orders = () => {
                       <TableCell className="text-gray-500 text-sm max-w-[200px] truncate">
                         {order.items.map((i: any) => i.name).join(', ')}
                       </TableCell>
-                      <TableCell className="text-right pr-6">
+                      <TableCell className="text-right pr-6 space-x-2">
                         <Sheet>
                           <SheetTrigger asChild>
                             <Button
@@ -233,7 +251,7 @@ const Orders = () => {
                                       {selectedOrder.items.map((item: any, i: number) => (
                                         <div key={i} className="flex gap-4 items-start">
                                           <div className="w-16 h-16 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
-                                            <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                            <img src={getImageUrl(item.image)} alt="" className="w-full h-full object-cover" />
                                           </div>
                                           <div className="flex-1 min-w-0">
                                             <p className="font-medium text-gray-900 line-clamp-2">{item.name}</p>
@@ -259,7 +277,7 @@ const Orders = () => {
                                       </div>
                                       <div className="text-sm text-gray-600 space-y-1">
                                         <p><span className="text-gray-400">Name:</span> {selectedOrder.customerName}</p>
-                                        <p><span className="text-gray-400">Email:</span> {getUsers().find((u: any) => u._id === selectedOrder.userId)?.email || 'N/A'}</p>
+                                        <p><span className="text-gray-400">Email:</span> {selectedOrder.user?.email || 'N/A'}</p>
                                       </div>
                                     </div>
 
@@ -299,6 +317,14 @@ const Orders = () => {
                             )}
                           </SheetContent>
                         </Sheet>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                          onClick={() => handleDelete(order._id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

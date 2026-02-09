@@ -31,21 +31,16 @@ import {
   X,
   Upload
 } from 'lucide-react';
-import {
-  getCategories,
-  setCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory
-} from '@/lib/storage';
-import { Category } from '@/types';
+import api from '@/lib/api';
+import { toast } from 'sonner';
 
 const Categories = () => {
-  const [categories, setCategoriesState] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [categories, setCategoriesState] = useState<any[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -55,82 +50,26 @@ const Categories = () => {
     isActive: true
   });
 
-  // Load categories and seed defaults if empty
-  useEffect(() => {
-    let fetchedCategories = getCategories();
-
-    if (fetchedCategories.length === 0) {
-      const defaultCategories: Category[] = [
-        {
-          _id: 'cat_shoes',
-          name: 'Shoes',
-          slug: 'shoes',
-          description: 'Footwear for all occasions',
-          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop',
-          isActive: true
-        },
-        {
-          _id: 'cat_watches',
-          name: 'Watches',
-          slug: 'watches',
-          description: 'Premium timepieces',
-          image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1999&auto=format&fit=crop',
-          isActive: true
-        },
-        {
-          _id: 'cat_tshirts',
-          name: 'T-Shirts',
-          slug: 't-shirts',
-          description: 'Casual comfort wear',
-          image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1780&auto=format&fit=crop',
-          isActive: true
-        },
-        {
-          _id: 'cat_shirts',
-          name: 'Shirts',
-          slug: 'shirts',
-          description: 'Formal and casual shirts',
-          image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=2070&auto=format&fit=crop',
-          isActive: true
-        },
-        {
-          _id: 'cat_heels',
-          name: 'Heels',
-          slug: 'heels',
-          description: 'Elegant footwear for women',
-          image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=2080&auto=format&fit=crop',
-          isActive: true
-        },
-        {
-          _id: 'cat_boys',
-          name: 'Boys',
-          slug: 'boys',
-          description: 'Fashion for boys',
-          image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?q=80&w=1974&auto=format&fit=crop',
-          isActive: true
-        },
-        {
-          _id: 'cat_girls',
-          name: 'Girls',
-          slug: 'girls',
-          description: 'Fashion for girls',
-          image: 'https://images.unsplash.com/photo-1621452773781-0f992fd0f5d0?q=80&w=1974&auto=format&fit=crop',
-          isActive: true
-        }
-      ];
-      setCategories(defaultCategories);
-      fetchedCategories = defaultCategories;
+  // Load categories
+  const fetchCategories = async () => {
+    try {
+      const { data } = await api.get('/categories');
+      setCategoriesState(data);
+      setFilteredCategories(data);
+    } catch (error) {
+      toast.error('Failed to fetch categories');
     }
+  };
 
-    setCategoriesState(fetchedCategories);
-    setFilteredCategories(fetchedCategories);
+  useEffect(() => {
+    fetchCategories();
   }, []);
 
   // Filter categories based on search term
   useEffect(() => {
     const filtered = categories.filter(category =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       category.slug.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredCategories(filtered);
@@ -138,11 +77,7 @@ const Categories = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,67 +89,55 @@ const Categories = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (editingCategory) {
-      // Update existing category
-      const updatedCat = updateCategory(editingCategory._id, formData);
-      if (updatedCat) {
-        const updatedCategories = categories.map(cat =>
-          cat._id === editingCategory._id ? updatedCat : cat
-        );
-        setCategoriesState(updatedCategories);
-        setFilteredCategories(updatedCategories);
+    try {
+      if (editingCategory) {
+        await api.put(`/categories/${editingCategory._id}`, formData);
+        toast.success('Category updated');
+      } else {
+        await api.post('/categories', formData);
+        toast.success('Category created');
       }
-    } else {
-      // Create new category
-      const newCategory = createCategory(formData);
-      const updatedCategories = [...categories, newCategory];
-      setCategoriesState(updatedCategories);
-      setFilteredCategories(updatedCategories);
+      await fetchCategories();
+      resetForm();
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save category');
+    } finally {
+      setLoading(false);
     }
-
-    // Reset form and close dialog
-    setFormData({
-      name: '',
-      slug: '',
-      description: '',
-      image: '',
-      isActive: true
-    });
-    setEditingCategory(null);
-    setIsDialogOpen(false);
   };
 
-  const handleEdit = (category: Category) => {
+  const handleEdit = (category: any) => {
     setEditingCategory(category);
     setFormData({
       name: category.name,
       slug: category.slug,
-      description: category.description,
+      description: category.description || '',
       image: category.image || '',
       isActive: category.isActive
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (categoryId: string) => {
+  const handleDelete = async (categoryId: string) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
-      deleteCategory(categoryId);
-      const updatedCategories = categories.filter(c => c._id !== categoryId);
-      setCategoriesState(updatedCategories);
-      setFilteredCategories(updatedCategories);
+      try {
+        await api.delete(`/categories/${categoryId}`);
+        toast.success('Category deleted');
+        fetchCategories();
+      } catch (error) {
+        toast.error('Failed to delete category');
+      }
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      slug: '',
-      description: '',
-      image: '',
-      isActive: true
+      name: '', slug: '', description: '', image: '', isActive: true
     });
     setEditingCategory(null);
   };

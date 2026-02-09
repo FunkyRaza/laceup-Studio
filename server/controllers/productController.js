@@ -26,16 +26,16 @@ const getProductById = asyncHandler(async (req, res) => {
 // @route   POST /api/products
 // @access  Private/Admin
 const createProduct = asyncHandler(async (req, res) => {
-    const { name, description, price, stock, image, category, gender } = req.body;
+    const {
+        name, description, price, oldPrice, stock, brand, subCategory,
+        hsnCode, quality, gender, image, images, video, category,
+        featured, isActive, tags, metaTitle, metaKeywords, metaDescription
+    } = req.body;
 
     const product = new Product({
-        name,
-        description,
-        price,
-        stock,
-        image,
-        category,
-        gender,
+        name, description, price, oldPrice, stock, brand, subCategory,
+        hsnCode, quality, gender, image, images, video, category,
+        featured, isActive, tags, metaTitle, metaKeywords, metaDescription,
         createdBy: req.user._id
     });
 
@@ -47,17 +47,21 @@ const createProduct = asyncHandler(async (req, res) => {
 // @route   PUT /api/products/:id
 // @access  Private/Admin
 const updateProduct = asyncHandler(async (req, res) => {
-    const { name, description, price, stock, image, category, gender } = req.body;
     const product = await Product.findById(req.params.id);
 
     if (product) {
-        product.name = name || product.name;
-        product.description = description || product.description;
-        product.price = price || product.price;
-        product.stock = stock || product.stock;
-        product.image = image || product.image;
-        product.category = category || product.category;
-        product.gender = gender || product.gender;
+        const fields = [
+            'name', 'description', 'price', 'oldPrice', 'stock', 'brand',
+            'subCategory', 'hsnCode', 'quality', 'gender', 'image', 'images',
+            'video', 'category', 'featured', 'isActive', 'tags',
+            'metaTitle', 'metaKeywords', 'metaDescription'
+        ];
+
+        fields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                product[field] = req.body[field];
+            }
+        });
 
         const updatedProduct = await product.save();
         res.json(updatedProduct);

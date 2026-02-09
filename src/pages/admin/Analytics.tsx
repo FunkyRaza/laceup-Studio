@@ -33,142 +33,73 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getProducts, getOrders, getUsers } from '@/lib/storage';
-import { Product, Order, User } from '@/types';
+import api from '@/lib/api';
+import { toast } from 'sonner';
 
 const Analytics = () => {
-  const [analytics, setAnalytics] = useState({
+  const [stats, setStats] = useState({
     totalRevenue: 0,
     totalOrders: 0,
     totalCustomers: 0,
     totalProducts: 0,
-    monthlyRevenue: [],
-    monthlyOrders: [],
-    categoryPerformance: [],
-    recentOrders: [],
-    revenueGrowth: 0
+    revenueGrowth: 0,
+    monthlyRevenue: [] as any[],
+    monthlyOrders: [] as any[],
+    categoryPerformance: [] as any[]
   });
-
+  const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
 
-  // Fetch data and calculate analytics
   useEffect(() => {
-    const products = getProducts();
-    const orders = getOrders();
-    const users = getUsers();
+    const fetchAnalytics = async () => {
+      try {
+        const { data } = await api.get('/analytics/detailed');
+        setStats({
+          totalRevenue: data.totalRevenue || 0,
+          totalOrders: data.totalOrders || 0,
+          totalCustomers: data.totalCustomers || 0,
+          totalProducts: data.totalProducts || 0,
+          revenueGrowth: data.revenueGrowth || 0,
+          monthlyRevenue: data.monthlyRevenue || [],
+          monthlyOrders: data.monthlyOrders || [],
+          categoryPerformance: data.categoryPerformance || []
+        });
+      } catch (error) {
+        console.error('Failed to fetch analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Calculate totals
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    const totalOrders = orders.length;
-    const totalCustomers = users.length;
-    const totalProducts = products.length;
-
-    // Real monthly revenue data
-    const last12Months = Array.from({ length: 12 }, (_, i) => {
-      const d = new Date();
-      d.setMonth(d.getMonth() - (11 - i));
-      return d.toLocaleString('en-US', { month: 'short' });
-    });
-
-    const monthlyRevenue = last12Months.map(month => {
-      const monthOrders = orders.filter(o =>
-        new Date(o.createdAt).toLocaleString('en-US', { month: 'short' }) === month
-      );
-      return {
-        name: month,
-        revenue: monthOrders.reduce((sum, o) => sum + o.total, 0),
-      };
-    });
-
-    // Real monthly orders data
-    const monthlyOrders = last12Months.map(month => {
-      const monthOrders = orders.filter(o =>
-        new Date(o.createdAt).toLocaleString('en-US', { month: 'short' }) === month
-      );
-      return {
-        name: month,
-        orders: monthOrders.length,
-      };
-    });
-
-    // Real category performance
-    const categoryRevenue: Record<string, { revenue: number, orders: number }> = {};
-    orders.forEach(order => {
-      order.items.forEach(item => {
-        // Find product to get category
-        const product = products.find(p => p._id === item.productId);
-        const cat = product?.category || 'Other';
-        if (!categoryRevenue[cat]) categoryRevenue[cat] = { revenue: 0, orders: 0 };
-        categoryRevenue[cat].revenue += item.price * item.quantity;
-        categoryRevenue[cat].orders += 1;
-      });
-    });
-
-    const categoryPerformance = Object.keys(categoryRevenue).map(cat => ({
-      name: cat.charAt(0).toUpperCase() + cat.slice(1),
-      revenue: categoryRevenue[cat].revenue,
-      orders: categoryRevenue[cat].orders,
-    }));
-
-    // Recent orders
-    const recentOrders = [...orders].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    ).slice(0, 5);
-
-    // Calculate revenue growth (Simplified: comparing this month vs last month)
-    const thisMonth = new Date().toLocaleString('en-US', { month: 'short' });
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const lastMonthName = lastMonth.toLocaleString('en-US', { month: 'short' });
-
-    const currentMonthRevenue = monthlyRevenue.find(m => m.name === thisMonth)?.revenue || 0;
-    const previousMonthRevenue = monthlyRevenue.find(m => m.name === lastMonthName)?.revenue || 0;
-
-    let revenueGrowth = 0;
-    if (previousMonthRevenue > 0) {
-      revenueGrowth = Number(((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100).toFixed(1));
-    } else if (currentMonthRevenue > 0) {
-      revenueGrowth = 100;
-    }
-
-    setAnalytics({
-      totalRevenue,
-      totalOrders,
-      totalCustomers,
-      totalProducts,
-      monthlyRevenue,
-      monthlyOrders,
-      categoryPerformance: categoryPerformance.length > 0 ? categoryPerformance : [
-        { name: 'Watches', revenue: 0, orders: 0 },
-        { name: 'Shoes', revenue: 0, orders: 0 },
-        { name: 'Apparel', revenue: 0, orders: 0 }
-      ],
-      recentOrders,
-      revenueGrowth
-    });
+    fetchAnalytics();
   }, [dateRange]);
 
-  const handleExport = () => {
-    const orders = getOrders();
-    const csvHeader = "Order ID,Customer,Total,Status,Date\n";
-    const csvRows = orders.map(o =>
-      `${o._id},${o.customerDetails.firstName} ${o.customerDetails.lastName},${o.total},${o.status},${o.createdAt}`
-    ).join("\n");
+  const handleExport = async () => {
+    try {
+      const { data: orders } = await api.get('/orders');
+      const csvHeader = "Order ID,Customer,Total,Status,Date\n";
+      const csvRows = orders.map((o: any) =>
+        `${o._id},${o.user?.name || 'Unknown'},${o.total},${o.status},${o.createdAt}`
+      ).join("\n");
 
-    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `analytics_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    toast.success("Analytics exported successfully!");
+      const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `analytics_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success("Analytics exported successfully!");
+    } catch (error) {
+      toast.error('Export failed');
+    }
   };
 
-  // Colors for charts
   const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
+
+  if (loading) return <div className="p-10 text-center">Loading analytics...</div>;
 
   return (
     <div className="space-y-6">
@@ -206,8 +137,8 @@ const Analytics = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gray-900">₹{analytics.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded">+{analytics.revenueGrowth}% from last period</p>
+            <div className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toLocaleString()}</div>
+            <p className="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded">+{stats.revenueGrowth}% from last period</p>
           </CardContent>
         </Card>
 
@@ -219,7 +150,7 @@ const Analytics = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gray-900">{analytics.totalOrders}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.totalOrders}</div>
             <p className="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded">+8.2% from last period</p>
           </CardContent>
         </Card>
@@ -232,7 +163,7 @@ const Analytics = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gray-900">{analytics.totalCustomers}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.totalCustomers}</div>
             <p className="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded">+3.1% from last period</p>
           </CardContent>
         </Card>
@@ -245,7 +176,7 @@ const Analytics = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gray-900">{analytics.totalProducts}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.totalProducts}</div>
             <p className="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded">+5.7% from last period</p>
           </CardContent>
         </Card>
@@ -253,7 +184,6 @@ const Analytics = () => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Revenue Chart */}
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-gray-900 flex items-center">
@@ -264,7 +194,7 @@ const Analytics = () => {
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={analytics.monthlyRevenue}>
+                <AreaChart data={stats.monthlyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                   <XAxis dataKey="name" stroke="#9CA3AF" tickLine={false} axisLine={false} dy={10} />
                   <YAxis stroke="#9CA3AF" tickLine={false} axisLine={false} dx={-10} tickFormatter={(value) => `₹${value}`} />
@@ -293,7 +223,6 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        {/* Category Performance Chart */}
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-gray-900 flex items-center">
@@ -306,7 +235,7 @@ const Analytics = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={analytics.categoryPerformance}
+                    data={stats.categoryPerformance}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -316,7 +245,7 @@ const Analytics = () => {
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     stroke="none"
                   >
-                    {analytics.categoryPerformance.map((entry, index) => (
+                    {stats.categoryPerformance.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -332,9 +261,7 @@ const Analytics = () => {
         </Card>
       </div>
 
-      {/* Additional Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Orders Chart */}
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-gray-900 flex items-center">
@@ -345,7 +272,7 @@ const Analytics = () => {
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={analytics.monthlyOrders}>
+                <LineChart data={stats.monthlyOrders}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                   <XAxis dataKey="name" stroke="#9CA3AF" tickLine={false} axisLine={false} dy={10} />
                   <YAxis stroke="#9CA3AF" tickLine={false} axisLine={false} dx={-10} />
@@ -368,7 +295,6 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        {/* Customer Growth Chart */}
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-gray-900 flex items-center">
@@ -379,7 +305,7 @@ const Analytics = () => {
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analytics.monthlyRevenue}>
+                <BarChart data={stats.monthlyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                   <XAxis dataKey="name" stroke="#9CA3AF" tickLine={false} axisLine={false} dy={10} />
                   <YAxis stroke="#9CA3AF" tickLine={false} axisLine={false} dx={-10} />

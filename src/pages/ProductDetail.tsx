@@ -5,11 +5,11 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ProductCard } from '@/components/product/ProductCard';
 import { Product, Review } from '@/types';
-import { getProductBySlug, getProducts, addReview } from '@/lib/storage';
+import api from '@/lib/api';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const ProductDetail: React.FC = () => {
@@ -33,23 +33,33 @@ const ProductDetail: React.FC = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    if (slug) {
-      const foundProduct = getProductBySlug(slug);
-      if (foundProduct) {
+    const fetchProductData = async () => {
+      if (!slug) return;
+      try {
+        setLoading(true);
+        const { data: foundProduct } = await api.get(`/products/slug/${slug}`);
         setProduct(foundProduct);
         setSelectedSize(foundProduct.sizes?.[0]);
         setSelectedColor(foundProduct.colors?.[0]?.name);
 
         // Get related products
-        const allProducts = getProducts().filter(p => p.isActive && p._id !== foundProduct._id);
+        const { data: allProducts } = await api.get('/products');
         const related = allProducts
-          .filter(p => p.category === foundProduct.category || p.gender === foundProduct.gender)
+          .filter((p: Product) => p.isActive && p._id !== foundProduct._id)
+          .filter((p: Product) => {
+            const prodCat = typeof foundProduct.category === 'object' ? foundProduct.category._id : foundProduct.category;
+            const pCat = typeof p.category === 'object' ? p.category._id : p.category;
+            return pCat === prodCat || p.gender === foundProduct.gender;
+          })
           .slice(0, 4);
         setRelatedProducts(related);
+      } catch (error) {
+        console.error('Failed to fetch product', error);
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+    fetchProductData();
     setSelectedImage(0);
     setQuantity(1);
   }, [slug]);
@@ -102,7 +112,7 @@ const ProductDetail: React.FC = () => {
     toast.success('Added to cart!');
   };
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.error('Please login to leave a review');
@@ -114,23 +124,24 @@ const ProductDetail: React.FC = () => {
     }
 
     setSubmittingReview(true);
-    const newReview = addReview(product._id, {
-      userId: user._id,
-      userName: `${user.firstName} ${user.lastName}`,
-      userAvatar: user.avatar,
-      rating,
-      comment,
-    });
+    try {
+      await api.post(`/products/${product?._id}/reviews`, {
+        rating,
+        comment,
+      });
 
-    if (newReview) {
       // Refresh product data
-      const updatedProduct = getProductBySlug(product.slug);
-      if (updatedProduct) setProduct(updatedProduct);
+      const { data: updatedProduct } = await api.get(`/products/slug/${slug}`);
+      setProduct(updatedProduct);
       setComment('');
       setRating(5);
       toast.success('Review submitted successfully!');
+    } catch (error) {
+      console.error('Failed to submit review', error);
+      toast.error('Failed to submit review');
+    } finally {
+      setSubmittingReview(false);
     }
-    setSubmittingReview(false);
   };
 
   return (
@@ -156,7 +167,7 @@ const ProductDetail: React.FC = () => {
             <div className="space-y-6">
               <div className="aspect-square bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 group">
                 <img
-                  src={product.images[selectedImage]}
+                  src={getImageUrl(product.images[selectedImage])}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -172,7 +183,7 @@ const ProductDetail: React.FC = () => {
                         selectedImage === i ? 'border-blue-600 scale-95' : 'border-white shadow-md'
                       )}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -184,7 +195,7 @@ const ProductDetail: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100">
-                    {product.category.replace('-', ' ')}
+                    {typeof product.category === 'object' ? product.category.name : product.category}
                   </span>
                   <div className="flex items-center gap-1 text-amber-500 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
                     <Star className="w-3 h-3 fill-current" />

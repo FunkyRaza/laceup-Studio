@@ -31,11 +31,12 @@ export interface Product {
   description: string;
   price: number;
   oldPrice?: number;
+  image?: string; // Main image from backend
   images: string[]; // Supports multiple images
   video?: string;
-  category: 'watches' | 'shoes' | 't-shirts' | 'shirts';
+  category: string | Category; // flexible
   subCategory?: string;
-  gender: 'men' | 'women' | 'unisex';
+  gender: 'Men' | 'Women' | 'Unisex';
   sizes?: string[];
   colors?: ProductColor[];
   stock: number;

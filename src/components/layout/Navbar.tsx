@@ -5,6 +5,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import api from '@/lib/api';
 
 const mainLinks = [
   { name: 'Home', path: '/' },
@@ -16,16 +17,10 @@ const mainLinks = [
   { name: 'Sale', path: '/shop?sale=true', isHighlight: true },
 ];
 
-const categories = [
-  { name: 'Sneakers', slug: 'sneakers' },
-  { name: 'Running', slug: 'running' },
-  { name: 'Boots', slug: 'boots' },
-  { name: 'Accessories', slug: 'accessories' },
-];
-
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,6 +33,18 @@ export const Navbar: React.FC = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+
+    // Fetch dynamic categories
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get('/categories');
+        setCategories(data.filter((c: any) => c.isActive));
+      } catch (error) {
+        console.error('Navbar category fetch failed', error);
+      }
+    };
+    fetchCategories();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

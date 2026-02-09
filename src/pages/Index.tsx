@@ -5,8 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ProductCard } from '@/components/product/ProductCard';
 import { Product, Category } from '@/types';
-import { getProducts, getCategories } from '@/lib/storage';
-import { seedData } from '@/lib/seedData';
+import api from '@/lib/api';
 
 const features = [
   { icon: Truck, title: 'Free Shipping', desc: 'On orders over $100' },
@@ -18,11 +17,25 @@ const features = [
 const Index: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    seedData();
-    setProducts(getProducts().filter(p => p.isActive));
-    setCategories(getCategories());
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsRes, categoriesRes] = await Promise.all([
+          api.get('/products'),
+          api.get('/categories')
+        ]);
+        setProducts(productsRes.data.filter((p: Product) => p.isActive));
+        setCategories(categoriesRes.data.filter((c: Category) => c.isActive));
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const featuredProducts = products.filter(p => p.featured).slice(0, 4);

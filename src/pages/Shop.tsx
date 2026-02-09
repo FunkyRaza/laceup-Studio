@@ -7,10 +7,9 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/skeleton-loaders';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Product } from '@/types';
-import { getProducts } from '@/lib/storage';
+import api from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-const categories = ['all', 'watches', 'shoes', 't-shirts', 'shirts'];
 const genders = ['all', 'men', 'women'];
 const sortOptions = [
   { value: 'newest', label: 'Newest' },
@@ -22,6 +21,7 @@ const sortOptions = [
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -32,15 +32,26 @@ const Shop: React.FC = () => {
   const sortBy = searchParams.get('sort') || 'newest';
   const priceRange = {
     min: Number(searchParams.get('minPrice')) || 0,
-    max: Number(searchParams.get('maxPrice')) || 1000,
+    max: Number(searchParams.get('maxPrice')) || 10000,
   };
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setProducts(getProducts().filter(p => p.isActive));
-      setLoading(false);
-    }, 500);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsRes, categoriesRes] = await Promise.all([
+          api.get('/products'),
+          api.get('/categories')
+        ]);
+        setProducts(productsRes.data.filter((p: Product) => p.isActive));
+        setCategories(categoriesRes.data.filter((c: any) => c.isActive));
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const updateFilter = (key: string, value: string) => {
@@ -64,9 +75,9 @@ const Shop: React.FC = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
-        p => p.name.toLowerCase().includes(query) || 
-             p.description.toLowerCase().includes(query) ||
-             p.category.toLowerCase().includes(query)
+        p => p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query)
       );
     }
 
@@ -77,7 +88,7 @@ const Shop: React.FC = () => {
 
     // Gender
     if (genderFilter && genderFilter !== 'all') {
-      result = result.filter(p => p.gender === genderFilter || p.gender === 'unisex');
+      result = result.filter(p => p.gender.toLowerCase() === genderFilter.toLowerCase() || p.gender.toLowerCase() === 'unisex');
     }
 
     // Price
@@ -168,18 +179,29 @@ const Shop: React.FC = () => {
               <div>
                 <p className="font-medium mb-3">Category</p>
                 <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => updateFilter('category', 'all')}
+                    className={cn(
+                      'px-4 py-2 rounded-full text-sm capitalize transition-colors',
+                      categoryFilter === 'all'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background border border-border hover:border-primary'
+                    )}
+                  >
+                    All
+                  </button>
                   {categories.map((cat) => (
                     <button
-                      key={cat}
-                      onClick={() => updateFilter('category', cat)}
+                      key={cat._id}
+                      onClick={() => updateFilter('category', cat.slug)}
                       className={cn(
                         'px-4 py-2 rounded-full text-sm capitalize transition-colors',
-                        categoryFilter === cat
+                        categoryFilter === cat.slug
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-background border border-border hover:border-primary'
                       )}
                     >
-                      {cat === 't-shirts' ? 'T-Shirts' : cat}
+                      {cat.name}
                     </button>
                   ))}
                 </div>

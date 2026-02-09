@@ -19,21 +19,36 @@ const Login: React.FC = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate(from, { replace: true });
+      const storedUser = localStorage.getItem('laceup_current_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData.role === 'admin' || userData.role === 'superadmin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
+      }
     }
   }, [isAuthenticated, navigate, from]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
-      const success = login(email, password);
-      if (success) {
-        navigate(from, { replace: true });
+    const success = await login(email, password);
+    if (success) {
+      // Automatic redirection based on role
+      const storedUser = localStorage.getItem('laceup_current_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData.role === 'admin' || userData.role === 'superadmin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
       }
-      setLoading(false);
-    }, 500);
+    }
+    setLoading(false);
   };
 
   return (
@@ -126,8 +141,8 @@ const Login: React.FC = () => {
             <div className="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 text-center transition-all hover:bg-blue-50/50">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Professional Demo</p>
               <div className="space-y-1">
-                <p className="text-slate-600 font-semibold text-sm">admin@laceup.com</p>
-                <p className="text-slate-500 text-sm">Pass: admin123</p>
+                <p className="text-slate-600 font-semibold text-sm">superadmin@laceup.com</p>
+                <p className="text-slate-500 text-sm">Pass: Super@123</p>
               </div>
             </div>
           </div>
