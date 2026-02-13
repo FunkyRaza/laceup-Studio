@@ -18,7 +18,20 @@ import {
   Palette,
   Globe,
   Save,
-  Upload
+  Upload,
+  Bell,
+  Eye,
+  Database,
+  HardDrive,
+  Monitor,
+  Smartphone,
+  Server,
+  Key,
+  CreditCard,
+  Zap,
+  Cloud,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
 const Settings = () => {
@@ -69,54 +82,32 @@ const Settings = () => {
         {/* Tab Navigation */}
         <div className="border-b border-gray-100 bg-gray-50/50">
           <nav className="flex flex-wrap -mb-px">
-            <button
-              className={`px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'profile'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`}
-              onClick={() => setActiveTab('profile')}
-            >
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </div>
-            </button>
-            <button
-              className={`px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'security'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`}
-              onClick={() => setActiveTab('security')}
-            >
-              <div className="flex items-center">
-                <Shield className="h-4 w-4 mr-2" />
-                Security
-              </div>
-            </button>
-            <button
-              className={`px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'site'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`}
-              onClick={() => setActiveTab('site')}
-            >
-              <div className="flex items-center">
-                <Globe className="h-4 w-4 mr-2" />
-                Site
-              </div>
-            </button>
-            <button
-              className={`px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'appearance'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`}
-              onClick={() => setActiveTab('appearance')}
-            >
-              <div className="flex items-center">
-                <Palette className="h-4 w-4 mr-2" />
-                Appearance
-              </div>
-            </button>
+            {[
+              { id: 'profile', label: 'Profile', icon: User },
+              { id: 'account', label: 'Account', icon: CreditCard },
+              { id: 'security', label: 'Security', icon: Shield },
+              { id: 'notifications', label: 'Notifications', icon: Bell },
+              { id: 'site', label: 'Site Settings', icon: Globe },
+              { id: 'appearance', label: 'Appearance', icon: Palette },
+              { id: 'integration', label: 'Integration', icon: Zap },
+              { id: 'advanced', label: 'Advanced', icon: Server }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  className={`px-6 py-4 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-2 ${
+                    activeTab === tab.id
+                      ? 'text-blue-600 border-blue-600 bg-white shadow-sm'
+                      : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50 hover:border-gray-200'
+                  }`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
         <CardHeader className="bg-white pt-6">

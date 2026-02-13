@@ -22,6 +22,16 @@ const getProductById = asyncHandler(async (req, res) => {
     }
 });
 
+// Helper function to generate slug from name
+const generateSlug = (name) => {
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/[\s_-]+/g, '-') // Replace spaces, underscores, and multiple hyphens with single hyphen
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin
@@ -32,10 +42,14 @@ const createProduct = asyncHandler(async (req, res) => {
         featured, isActive, tags, metaTitle, metaKeywords, metaDescription
     } = req.body;
 
+    // Generate slug from name if not provided
+    const slug = req.body.slug || generateSlug(name);
+
     const product = new Product({
         name, description, price, oldPrice, stock, brand, subCategory,
         hsnCode, quality, gender, image, images, video, category,
         featured, isActive, tags, metaTitle, metaKeywords, metaDescription,
+        slug,
         createdBy: req.user._id
     });
 
@@ -54,7 +68,7 @@ const updateProduct = asyncHandler(async (req, res) => {
             'name', 'description', 'price', 'oldPrice', 'stock', 'brand',
             'subCategory', 'hsnCode', 'quality', 'gender', 'image', 'images',
             'video', 'category', 'featured', 'isActive', 'tags',
-            'metaTitle', 'metaKeywords', 'metaDescription'
+            'metaTitle', 'metaKeywords', 'metaDescription', 'slug'
         ];
 
         fields.forEach(field => {
@@ -62,6 +76,11 @@ const updateProduct = asyncHandler(async (req, res) => {
                 product[field] = req.body[field];
             }
         });
+
+        // Generate slug from name if not provided and name was changed
+        if (req.body.name && !req.body.slug) {
+            product.slug = generateSlug(req.body.name);
+        }
 
         const updatedProduct = await product.save();
         res.json(updatedProduct);
@@ -93,4 +112,17 @@ const getProductsByCategory = asyncHandler(async (req, res) => {
     res.json(products);
 });
 
-module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct, getProductsByCategory };
+// @desc    Get product by slug
+// @route   GET /api/products/slug/:slug
+// @access  Public
+const getProductBySlug = asyncHandler(async (req, res) => {
+    const product = await Product.findOne({ slug: req.params.slug }).populate('category', 'name');
+    if (product) {
+        res.json(product);
+    } else {
+        res.status(404);
+        throw new Error('Product not found');
+    }
+});
+
+module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct, getProductsByCategory, getProductBySlug };

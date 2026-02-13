@@ -42,6 +42,7 @@ export interface Product {
   stock: number;
   featured: boolean;
   isActive: boolean;
+  discount?: number; // Discount percentage (0-100)
 
   // Additional Fields
   hsnCode?: string;

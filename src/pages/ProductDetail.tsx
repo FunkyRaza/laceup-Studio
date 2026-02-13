@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, Minus, Plus, ShoppingBag, ChevronLeft, Truck, RefreshCcw, Shield, Star, MessageSquare, Send, User as UserIcon, ArrowRight } from 'lucide-react';
+import { Heart, Minus, Plus, ShoppingBag, ChevronLeft, Truck, RefreshCcw, Shield, Star, MessageSquare, Send, User as UserIcon, ArrowRight, Edit, Trash2 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ProductCard } from '@/components/product/ProductCard';
@@ -223,37 +223,43 @@ const ProductDetail: React.FC = () => {
 
               <p className="text-slate-500 font-medium leading-relaxed text-lg">{product.description}</p>
 
-              <div className="space-y-8 py-8 border-y border-slate-100">
-                {/* Colors */}
+              {/* Sizes and Colors Display */}
+              <div className="space-y-6 py-6">
+                {/* Available Colors */}
                 {product.colors && product.colors.length > 0 && (
-                  <div>
-                    <div className="flex justify-between items-end mb-4">
-                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Select Color</p>
-                      <p className="text-sm font-black text-slate-900">{selectedColor}</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Available Colors</h4>
+                      <span className="text-sm font-bold text-slate-500">{product.colors.length} options</span>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-3">
                       {product.colors.map((color) => (
-                        <button
+                        <div 
                           key={color.name}
-                          onClick={() => setSelectedColor(color.name)}
                           className={cn(
-                            'w-10 h-10 rounded-full border-4 transition-all duration-300 ring-4',
-                            selectedColor === color.name ? 'ring-blue-100 border-white scale-110' : 'ring-transparent border-transparent opacity-80'
+                            'flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all duration-300 cursor-pointer',
+                            selectedColor === color.name ? 'border-blue-600 bg-blue-50' : 'border-slate-100 bg-white'
                           )}
-                          style={{ backgroundColor: color.hex }}
-                          title={color.name}
-                        />
+                          onClick={() => setSelectedColor(color.name)}
+                        >
+                          <div 
+                            className="w-8 h-8 rounded-full border border-slate-200" 
+                            style={{ backgroundColor: color.hex }}
+                            title={color.name}
+                          />
+                          <span className="text-xs font-bold text-slate-700">{color.name}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Sizes */}
+                {/* Available Sizes */}
                 {product.sizes && product.sizes.length > 0 && (
-                  <div>
-                    <div className="flex justify-between items-end mb-4">
-                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Select Size</p>
-                      <p className="text-sm font-black text-slate-900">{selectedSize}</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Available Sizes</h4>
+                      <span className="text-sm font-bold text-slate-500">{product.sizes.length} options</span>
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {product.sizes.map((size) => (
@@ -261,10 +267,10 @@ const ProductDetail: React.FC = () => {
                           key={size}
                           onClick={() => setSelectedSize(size)}
                           className={cn(
-                            'min-w-[56px] h-14 px-5 border-2 rounded-2xl font-black text-sm transition-all duration-300',
+                            'min-w-[60px] h-12 px-4 border-2 rounded-xl font-black text-base transition-all duration-300',
                             selectedSize === size
                               ? 'border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-200'
-                              : 'border-slate-100 bg-white text-slate-600 hover:border-slate-300'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
                           )}
                         >
                           {size}
@@ -273,6 +279,23 @@ const ProductDetail: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {selectedSize && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
+                      <span className="font-bold text-blue-700">Selected Size:</span>
+                      <span className="font-black text-blue-900">{selectedSize}</span>
+                    </div>
+                  )}
+                  {selectedColor && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
+                      <span className="font-bold text-blue-700">Selected Color:</span>
+                      <span className="font-black text-blue-900">{selectedColor}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Quantity & Actions */}

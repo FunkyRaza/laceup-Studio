@@ -33,6 +33,17 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Categories = () => {
   const [categories, setCategoriesState] = useState<any[]>([]);
@@ -124,14 +135,12 @@ const Categories = () => {
   };
 
   const handleDelete = async (categoryId: string) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      try {
-        await api.delete(`/categories/${categoryId}`);
-        toast.success('Category deleted');
-        fetchCategories();
-      } catch (error) {
-        toast.error('Failed to delete category');
-      }
+    try {
+      await api.delete(`/categories/${categoryId}`);
+      toast.success('Category deleted');
+      fetchCategories();
+    } catch (error) {
+      toast.error('Failed to delete category');
     }
   };
 
@@ -337,14 +346,34 @@ const Categories = () => {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(category._id)}
-                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the category and remove it from our servers.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDelete(category._id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>

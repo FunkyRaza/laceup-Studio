@@ -18,6 +18,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -43,6 +44,17 @@ import {
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { cn, getImageUrl } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Products = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -152,7 +164,8 @@ const Products = () => {
       const payload = {
         ...formData,
         // Backend expects 'category' as ID string, ensure it's provided
-        image: formData.images?.[0] || '/placeholder.svg'
+        // Set main image from first image in array, or keep existing image field
+        image: formData.images && formData.images.length > 0 ? formData.images[0] : (formData.image || '/placeholder.svg')
       };
 
       if (editingProduct) {
@@ -183,14 +196,12 @@ const Products = () => {
   };
 
   const handleDelete = async (productId: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await api.delete(`/products/${productId}`);
-        toast.success('Product deleted');
-        fetchProducts();
-      } catch (error) {
-        toast.error('Failed to delete product');
-      }
+    try {
+      await api.delete(`/products/${productId}`);
+      toast.success('Product deleted');
+      fetchProducts();
+    } catch (error) {
+      toast.error('Failed to delete product');
     }
   };
 
@@ -207,10 +218,10 @@ const Products = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-500">Manage your product catalog</p>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Products</h1>
+          <p className="text-gray-500 mt-1">Manage your product catalog</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -223,16 +234,14 @@ const Products = () => {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white p-0 gap-0">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <div>
-                <DialogTitle className="text-2xl font-bold text-gray-900">
-                  {editingProduct ? 'Edit Product' : 'Add Product'}
-                </DialogTitle>
-                <p className="text-sm text-gray-500 mt-1">
-                  {editingProduct ? 'Update product details' : 'Create a new product listing'}
-                </p>
-              </div>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-100 shadow-xl p-0 gap-0">
+            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+              <DialogTitle className="text-2xl font-bold text-gray-900">
+                {editingProduct ? 'Edit Product' : 'Add New Product'}
+              </DialogTitle>
+              <DialogDescription className="text-gray-500 mt-1">
+                {editingProduct ? 'Update product details and specifications' : 'Create a new product listing with all details'}
+              </DialogDescription>
             </div>
 
             <div className="p-6">
@@ -461,7 +470,28 @@ const Products = () => {
                     </TableCell>
                     <TableCell className="text-right space-x-2 pr-6">
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(p)} className="text-gray-400 hover:text-blue-600 hover:bg-blue-50"><Edit className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(p._id)} className="text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the product and remove it from our servers.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDelete(p._id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}

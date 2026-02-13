@@ -24,6 +24,10 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Brands from "./pages/Brands";
 import TrackOrder from "./pages/TrackOrder";
+import NewArrivals from "./pages/NewArrivals";
+import Men from "./pages/Men";
+import Women from "./pages/Women";
+import Sale from "./pages/Sale";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -64,6 +68,10 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/brands" element={<Brands />} />
                 <Route path="/track-order" element={<TrackOrder />} />
+                <Route path="/new-arrivals" element={<NewArrivals />} />
+                <Route path="/men" element={<Men />} />
+                <Route path="/women" element={<Women />} />
+                <Route path="/sale" element={<Sale />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<Navigate to="/login" replace />} />

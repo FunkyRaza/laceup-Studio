@@ -68,7 +68,7 @@ const Profile: React.FC = () => {
                     {formData.avatar ? (
                       <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      `${user.firstName[0]}${user.lastName[0]}`
+                      `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`
                     )}
                   </div>
                   {isEditing && (

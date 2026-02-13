@@ -69,6 +69,19 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ sidebarOpen, setSidebarOpen }) =>
               <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
             </Button>
 
+            {/* Back to Website Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="hidden md:flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 border-gray-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+              Back to Website
+            </Button>
+
             <div className="relative group">
               <Button
                 variant="ghost"
@@ -76,19 +89,32 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ sidebarOpen, setSidebarOpen }) =>
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
                   {user?.avatar ? (
-                    <img src={user.avatar} alt={user.firstName} className="w-full h-full object-cover" />
+                    <img src={user.avatar} alt={user.name || user.firstName} className="w-full h-full object-cover" />
                   ) : (
                     <UserIcon className="h-4 w-4 text-gray-400" />
                   )}
                 </div>
                 <span className="hidden md:inline text-gray-700 font-medium text-sm">
-                  {user ? `${user.firstName} ${user.lastName}` : 'Admin'}
+                  {user ? 
+                    (user.firstName && user.lastName ? 
+                      `${user.firstName} ${user.lastName}` : 
+                      user.name || 'Admin User') 
+                    : 'Admin User'}
                 </span>
                 <ChevronDown className="h-3 w-3 hidden md:inline" />
               </Button>
 
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl shadow-gray-200/50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden transform origin-top-right">
                 <div className="p-1">
+                  <button
+                    onClick={() => navigate('/')}
+                    className="flex items-center w-full p-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors mb-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Back to Website
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full p-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"

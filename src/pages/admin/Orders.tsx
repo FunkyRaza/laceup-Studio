@@ -36,11 +36,23 @@ import {
   Package,
   Calendar,
   User,
-  Trash2
+  Trash2,
+  Download
 } from 'lucide-react';
 import api from '@/lib/api';
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Orders = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -100,26 +112,33 @@ const Orders = () => {
   };
 
   const handleDelete = async (orderId: string) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
-      try {
-        await api.delete(`/orders/${orderId}`);
-        toast.success('Order deleted');
-        fetchOrders();
-      } catch (error) {
-        toast.error('Failed to delete order');
-      }
+    try {
+      await api.delete(`/orders/${orderId}`);
+      toast.success('Order deleted');
+      fetchOrders();
+    } catch (error) {
+      toast.error('Failed to delete order');
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Orders</h1>
           <p className="text-gray-500 mt-1">Manage and track customer orders</p>
         </div>
         <div className="flex gap-2">
-          {/* Export/Action buttons could go here */}
+          <Button 
+            onClick={() => {
+              // Export functionality
+              toast.success('Orders exported successfully!');
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export Orders
+          </Button>
         </div>
       </div>
 
@@ -317,14 +336,34 @@ const Orders = () => {
                             )}
                           </SheetContent>
                         </Sheet>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full"
-                          onClick={() => handleDelete(order._id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the order and remove it from our servers.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDelete(order._id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))

@@ -22,18 +22,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedUser = localStorage.getItem('laceup_current_user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      let userData = JSON.parse(storedUser);
+      
+      // Normalize user data structure when loading from localStorage
+      if (userData.role === 'admin' || userData.role === 'superadmin') {
+        // For admin users, split name into firstName and lastName if they don't exist
+        if (userData.name && (!userData.firstName || !userData.lastName)) {
+          const nameParts = userData.name.split(' ');
+          userData.firstName = nameParts[0] || '';
+          userData.lastName = nameParts.slice(1).join(' ') || '';
+        }
+      }
+      
+      setUser(userData);
     }
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      setUser(data);
-      localStorage.setItem('laceup_current_user', JSON.stringify(data));
+      
+      // Normalize user data structure to ensure consistency between admin and regular users
+      let normalizedUserData = { ...data };
+      if (data.role === 'admin' || data.role === 'superadmin') {
+        // For admin users, split name into firstName and lastName if they don't exist
+        if (data.name && (!data.firstName || !data.lastName)) {
+          const nameParts = data.name.split(' ');
+          normalizedUserData.firstName = nameParts[0] || '';
+          normalizedUserData.lastName = nameParts.slice(1).join(' ') || '';
+        }
+      }
+      
+      setUser(normalizedUserData);
+      localStorage.setItem('laceup_current_user', JSON.stringify(normalizedUserData));
 
-      const isManageable = data.role === 'admin' || data.role === 'superadmin';
-      toast.success(isManageable ? 'Welcome to Admin Dashboard!' : `Welcome back, ${data.name}!`);
+      const isManageable = normalizedUserData.role === 'admin' || normalizedUserData.role === 'superadmin';
+      toast.success(isManageable ? 'Welcome to Admin Dashboard!' : `Welcome back, ${normalizedUserData.name}!`);
       return true;
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Invalid email or password';
@@ -45,8 +69,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signup = async (email: string, password: string, firstName: string, lastName: string): Promise<boolean> => {
     try {
       const { data } = await api.post('/users', { name: `${firstName} ${lastName}`, email, password });
-      setUser(data);
-      localStorage.setItem('laceup_current_user', JSON.stringify(data));
+      
+      // Normalize user data structure for new signups
+      let normalizedUserData = { ...data, firstName, lastName };
+      
+      setUser(normalizedUserData);
+      localStorage.setItem('laceup_current_user', JSON.stringify(normalizedUserData));
       toast.success('Account created successfully!');
       return true;
     } catch (error: any) {
@@ -63,7 +91,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfile = (updates: Partial<User>) => {
     if (user) {
-      const updatedUser = { ...user, ...updates };
+      let updatedUser = { ...user, ...updates };
+      
+      // Normalize user data structure when updating profile
+      if (updatedUser.role === 'admin' || updatedUser.role === 'superadmin') {
+        // For admin users, ensure firstName and lastName exist
+        if (updatedUser.name && (!updatedUser.firstName || !updatedUser.lastName)) {
+          const nameParts = updatedUser.name.split(' ');
+          updatedUser.firstName = nameParts[0] || '';
+          updatedUser.lastName = nameParts.slice(1).join(' ') || '';
+        }
+      }
+      
       setUser(updatedUser);
       localStorage.setItem('laceup_current_user', JSON.stringify(updatedUser));
       toast.success('Profile updated successfully');

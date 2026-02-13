@@ -18,6 +18,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -41,6 +42,17 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Customers = () => {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -127,20 +139,18 @@ const Customers = () => {
   };
 
   const handleDelete = async (customerId: string) => {
-    if (window.confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
-      try {
-        await api.delete(`/users/${customerId}`);
-        toast.success("Customer deleted successfully");
-        fetchCustomers();
-      } catch (error) {
-        toast.error("Failed to delete user.");
-      }
+    try {
+      await api.delete(`/users/${customerId}`);
+      toast.success("Customer deleted successfully");
+      fetchCustomers();
+    } catch (error) {
+      toast.error("Failed to delete user.");
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Customers</h1>
           <p className="text-gray-500 mt-1">Manage your customer base</p>
@@ -155,45 +165,81 @@ const Customers = () => {
               Add Customer
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-white">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-gray-900">
-                {editingCustomer ? 'Edit Customer' : 'Add Customer'}
+          <DialogContent className="sm:max-w-md bg-white border-gray-100 shadow-xl">
+            <DialogHeader className="border-b border-gray-100 pb-4">
+              <DialogTitle className="text-gray-900 font-bold text-xl">
+                {editingCustomer ? 'Edit Customer' : 'Add New Customer'}
               </DialogTitle>
+              <DialogDescription className="text-gray-500">
+                {editingCustomer
+                  ? 'Update the customer details below.'
+                  : 'Fill in the customer details to add a new customer.'}
+              </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Full Name</label>
-                  <Input name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" className="bg-gray-50 border-gray-200" required />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Email</label>
-                  <Input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" className="bg-gray-50 border-gray-200" required />
-                </div>
-                {!editingCustomer && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Password</label>
-                    <Input type="password" name="password" value={formData.password} onChange={handleInputChange} className="bg-gray-50 border-gray-200" required />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Role</label>
-                  <Select value={formData.role} onValueChange={handleRoleChange}>
-                    <SelectTrigger className="bg-gray-50 border-gray-200">
-                      <SelectValue placeholder="Select Role" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Full Name <span className="text-red-500">*</span></label>
+                <Input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="bg-gray-50 border-gray-200 text-gray-900 focus:bg-white"
+                  placeholder="John Doe"
+                  required
+                />
               </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  {editingCustomer ? 'Update' : 'Create'}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="bg-gray-50 border-gray-200 text-gray-900 focus:bg-white"
+                  placeholder="john@example.com"
+                  required
+                />
+              </div>
+              {!editingCustomer && (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>
+                  <Input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="bg-gray-50 border-gray-200 text-gray-900 focus:bg-white"
+                    required
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Role</label>
+                <Select value={formData.role} onValueChange={handleRoleChange}>
+                  <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-900 focus:bg-white">
+                    <SelectValue placeholder="Select Role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-gray-100">
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 mt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {editingCustomer ? 'Update Customer' : 'Create Customer'}
                 </Button>
               </div>
             </form>
@@ -270,14 +316,34 @@ const Customers = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(customer._id)}
-                          className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the customer account and remove their data from our servers.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDelete(customer._id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))

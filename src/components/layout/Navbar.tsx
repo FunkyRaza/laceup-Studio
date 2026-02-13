@@ -9,12 +9,12 @@ import api from '@/lib/api';
 
 const mainLinks = [
   { name: 'Home', path: '/' },
-  { name: 'New Arrivals', path: '/shop?sort=newest' },
-  { name: 'Men', path: '/shop?gender=men', hasDropdown: true },
-  { name: 'Women', path: '/shop?gender=women', hasDropdown: true },
+  { name: 'New Arrivals', path: '/new-arrivals' },
+  { name: 'Men', path: '/men', hasDropdown: false },
+  { name: 'Women', path: '/women', hasDropdown: false },
   { name: 'Brands', path: '/brands' },
   { name: 'Track Order', path: '/track-order' },
-  { name: 'Sale', path: '/shop?sale=true', isHighlight: true },
+  { name: 'Sale', path: '/sale', isHighlight: true },
 ];
 
 export const Navbar: React.FC = () => {
@@ -69,7 +69,7 @@ export const Navbar: React.FC = () => {
               <Link to="/contact" className="hover:text-gray-300 transition-colors">Help Center</Link>
               <Link to="/track-order" className="hover:text-gray-300 transition-colors">Track Order</Link>
               {isAdmin && (
-                <Link to="/admin" className="text-blue-300 hover:text-white transition-colors font-bold">Admin Panel</Link>
+                <Link to="/admin/dashboard" className="text-blue-300 hover:text-white transition-colors font-bold">Admin Panel</Link>
               )}
             </div>
           </div>
@@ -197,7 +197,7 @@ export const Navbar: React.FC = () => {
                           My Orders
                         </Link>
                         {isAdmin && (
-                          <Link to="/admin" className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md font-medium">
+                          <Link to="/admin/dashboard" className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md font-medium">
                             Admin Dashboard
                           </Link>
                         )}
