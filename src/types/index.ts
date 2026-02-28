@@ -9,16 +9,24 @@ export interface User {
   phone?: string;
   address?: Address;
   role: 'customer' | 'admin';
+  avatar?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface Address {
+  fullName?: string;
   street: string;
   city: string;
   state: string;
   zipCode: string;
   country: string;
+  phone?: string;
+}
+
+export interface ProductSize {
+  name: string;
+  quantity: number;
 }
 
 export interface Product {
@@ -27,22 +35,52 @@ export interface Product {
   slug: string;
   description: string;
   price: number;
-  compareAtPrice?: number;
-  images: string[];
-  category: 'watches' | 'shoes' | 't-shirts' | 'shirts';
-  gender: 'men' | 'women' | 'unisex';
-  sizes?: string[];
+  oldPrice?: number;
+  image?: string; // Main image from backend
+  images: string[]; // Supports multiple images
+  video?: string;
+  category: string | Category; // flexible
+  subCategory?: string;
+  gender: 'Men' | 'Women' | 'Unisex';
+  sizes?: (string | ProductSize)[];
   colors?: ProductColor[];
   stock: number;
   featured: boolean;
   isActive: boolean;
+  discount?: number; // Discount percentage (0-100)
+
+  // Additional Fields
+  hsnCode?: string;
+  brand?: string;
+  quality?: string;
+  tags?: string[];
+
+  // Meta Options
+  metaTitle?: string;
+  metaKeywords?: string;
+  metaDescription?: string;
+
+  reviews?: Review[];
+  rating?: number;
+
   createdAt: string;
   updatedAt: string;
 }
 
+export interface Review {
+  _id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 export interface ProductColor {
   name: string;
-  hex: string;
+  code: string;
+  quantity: number;
 }
 
 export interface CartItem {

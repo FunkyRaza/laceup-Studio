@@ -1,8 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@layer utilities {
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+}
 
 @layer base {
   :root {
@@ -53,33 +69,35 @@
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 0 0% 95%;
+    --background: 220 6% 8%;
+    --foreground: 220 10% 98%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 220 6% 10%;
+    --card-foreground: 220 10% 98%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 6% 10%;
+    --popover-foreground: 220 10% 98%;
 
-    --primary: 0 0% 95%;
-    --primary-foreground: 0 0% 8%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 220 6% 15%;
+    --secondary-foreground: 220 10% 98%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 220 6% 15%;
+    --muted-foreground: 220 6% 65%;
 
-    --accent: 30 30% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 220 6% 15%;
+    --accent-foreground: 220 10% 98%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 95%;
+    --border: 220 6% 15%;
+    --input: 220 6% 15%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.5rem;
   }
 }
 
@@ -93,7 +111,12 @@
     font-family: 'Inter', sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 }
@@ -138,6 +161,63 @@
   .skeleton-loading {
     @apply animate-pulse bg-muted rounded;
   }
+
+  /* Admin-specific styles */
+  .admin-sidebar {
+    @apply bg-gray-800 border-r border-gray-700;
+  }
+
+  .admin-navbar {
+    @apply bg-gray-800 border-b border-gray-700;
+  }
+
+  .admin-card {
+    @apply bg-gray-800 border border-gray-700 rounded-xl;
+  }
+
+  .admin-table-header {
+    @apply bg-gray-750 text-gray-400 font-medium;
+  }
+
+  .admin-table-row {
+    @apply border-b border-gray-700 hover:bg-gray-750 transition-colors;
+  }
+
+  .admin-input {
+    @apply bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:ring-primary focus:border-primary;
+  }
+
+  .admin-button-primary {
+    @apply bg-primary hover:bg-primary/90 text-white;
+  }
+
+  .admin-badge-active {
+    @apply bg-green-900/30 text-green-400;
+  }
+
+  .admin-badge-inactive {
+    @apply bg-red-900/30 text-red-400;
+  }
+
+  .admin-badge-pending {
+    @apply bg-yellow-900/30 text-yellow-400;
+  }
+
+  .admin-badge-processing {
+    @apply bg-blue-900/30 text-blue-400;
+  }
+
+  .admin-badge-shipped {
+    @apply bg-indigo-900/30 text-indigo-400;
+  }
+
+  .admin-badge-delivered {
+    @apply bg-green-900/30 text-green-400;
+  }
+
+  .admin-badge-cancelled {
+    @apply bg-gray-700 text-gray-300;
+  }
 }
 
 @layer utilities {
@@ -158,23 +238,49 @@
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .scrollbar-hide {

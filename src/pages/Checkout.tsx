@@ -5,9 +5,9 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { createOrder } from '@/lib/storage';
+import api from '@/lib/api';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -50,13 +50,11 @@ const Checkout: React.FC = () => {
     );
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     setLoading(true);
-    
-    // Simulate order processing
-    setTimeout(() => {
-      const order = createOrder({
-        userId: user?._id || 'guest',
+
+    try {
+      const orderData = {
         items: items.map(item => ({
           productId: item.productId,
           name: item.product.name,
@@ -64,13 +62,12 @@ const Checkout: React.FC = () => {
           quantity: item.quantity,
           size: item.size,
           color: item.color,
-          image: item.product.images[0],
+          image: getImageUrl(item.product.image || item.product.images[0]),
         })),
         subtotal,
         shipping,
         tax,
         total,
-        status: 'pending',
         shippingAddress: {
           street: shippingInfo.street,
           city: shippingInfo.city,
@@ -79,13 +76,19 @@ const Checkout: React.FC = () => {
           country: shippingInfo.country,
         },
         paymentMethod: 'card',
-      });
+      };
+
+      const { data: order } = await api.post('/orders', orderData);
 
       clearCart();
       toast.success('Order placed successfully!');
       navigate(`/orders?success=${order._id}`);
+    } catch (error) {
+      console.error('Order placement failed', error);
+      toast.error('Failed to place order');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const steps = [
@@ -292,7 +295,7 @@ const Checkout: React.FC = () => {
             {step === 3 && (
               <div className="animate-fade-in">
                 <h2 className="text-xl font-semibold mb-6">Review Your Order</h2>
-                
+
                 <div className="space-y-6">
                   <div className="bg-secondary/50 rounded-lg p-4">
                     <h3 className="font-medium mb-2">Shipping Address</h3>
@@ -327,7 +330,7 @@ const Checkout: React.FC = () => {
                             {item.size && ` • Size: ${item.size}`}
                           </p>
                         </div>
-                        <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium">₹{(item.product.price * item.quantity).toFixed(2)}</p>
                       </div>
                     ))}
                   </div>
@@ -342,7 +345,7 @@ const Checkout: React.FC = () => {
                     disabled={loading}
                     className="flex-1 btn-primary rounded-lg disabled:opacity-50"
                   >
-                    {loading ? 'Processing...' : `Place Order • $${total.toFixed(2)}`}
+                    {loading ? 'Processing...' : `Place Order • ₹${total.toFixed(2)}`}
                   </button>
                 </div>
               </div>
@@ -357,20 +360,20 @@ const Checkout: React.FC = () => {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal ({items.length} items)</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>₹{tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between text-base font-semibold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

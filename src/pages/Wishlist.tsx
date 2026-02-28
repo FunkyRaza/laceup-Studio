@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
+import { cn, getImageUrl } from '@/lib/utils';
 
 const Wishlist: React.FC = () => {
   const { items, removeItem } = useWishlist();
@@ -34,7 +35,7 @@ const Wishlist: React.FC = () => {
               <div className="relative aspect-[3/4] overflow-hidden bg-secondary rounded-lg mb-4">
                 <Link to={`/product/${item.product.slug}`}>
                   <img
-                    src={item.product.images[0]}
+                    src={getImageUrl(item.product.image || item.product.images[0])}
                     alt={item.product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -60,12 +61,12 @@ const Wishlist: React.FC = () => {
 
               <Link to={`/product/${item.product.slug}`}>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                  {item.product.category.replace('-', ' ')}
+                  {typeof item.product.category === 'object' ? item.product.category.name : item.product.category.replace('-', ' ')}
                 </p>
                 <h3 className="font-medium group-hover:text-accent transition-colors line-clamp-1">
                   {item.product.name}
                 </h3>
-                <p className="font-semibold mt-1">${item.product.price.toFixed(2)}</p>
+                <p className="font-semibold mt-1">₹{item.product.price.toFixed(2)}</p>
               </Link>
             </div>
           ))}

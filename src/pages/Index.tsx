@@ -5,8 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ProductCard } from '@/components/product/ProductCard';
 import { Product, Category } from '@/types';
-import { getProducts, getCategories } from '@/lib/storage';
-import { seedData } from '@/lib/seedData';
+import api from '@/lib/api';
 
 const features = [
   { icon: Truck, title: 'Free Shipping', desc: 'On orders over $100' },
@@ -18,11 +17,25 @@ const features = [
 const Index: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    seedData();
-    setProducts(getProducts().filter(p => p.isActive));
-    setCategories(getCategories());
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsRes, categoriesRes] = await Promise.all([
+          api.get('/products'),
+          api.get('/categories')
+        ]);
+        setProducts(productsRes.data.filter((p: Product) => p.isActive));
+        setCategories(categoriesRes.data.filter((c: Category) => c.isActive));
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const featuredProducts = products.filter(p => p.featured).slice(0, 4);
@@ -34,7 +47,7 @@ const Index: React.FC = () => {
 
       {/* Hero Section */}
       <section className="relative h-[80vh] min-h-[600px] flex items-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: 'url(https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920)',
@@ -42,7 +55,7 @@ const Index: React.FC = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
         </div>
-        
+
         <div className="container-custom relative z-10">
           <div className="max-w-2xl animate-slide-up">
             <p className="text-accent font-medium mb-4 tracking-wider uppercase">New Collection 2024</p>
@@ -84,40 +97,46 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-20">
+      {/* Categories - Rounded & Animated */}
+      <section className="py-16">
         <div className="container-custom">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Explore our curated collections for every occasion
-            </p>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold mb-3">Shop by Category</h2>
+            <p className="text-muted-foreground">Find what moves you</p>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+
+          <div className="flex flex-wrap justify-center gap-8 md:gap-12">
             {categories.map((category) => (
               <Link
                 key={category._id}
                 to={`/shop?category=${category.slug}`}
-                className="group relative aspect-[4/5] overflow-hidden rounded-lg"
+                className="group flex flex-col items-center gap-4 text-center"
               >
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-xl font-semibold text-primary-foreground mb-1">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-primary-foreground/70 group-hover:text-primary-foreground transition-colors flex items-center gap-1">
-                    Shop Now <ArrowRight className="w-4 h-4" />
-                  </p>
+                <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-transparent group-hover:border-primary/10 transition-all duration-500 shadow-sm group-hover:shadow-xl group-hover:scale-110">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
                 </div>
+                <span className="font-semibold text-lg group-hover:text-primary transition-colors">
+                  {category.name}
+                </span>
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Sale Banner Marquee */}
+      <section className="bg-red-600 py-3 overflow-hidden">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <span key={i} className="text-white font-bold text-xl uppercase mx-8 tracking-widest flex items-center gap-4">
+              Sale Sale <span className="text-white/50">•</span>
+            </span>
+          ))}
         </div>
       </section>
 
@@ -133,13 +152,13 @@ const Index: React.FC = () => {
               View All <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {featuredProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
-          
+
           <div className="mt-8 text-center md:hidden">
             <Link to="/shop?featured=true" className="btn-outline rounded-lg inline-flex items-center gap-2">
               View All Products <ArrowRight className="w-4 h-4" />
@@ -188,7 +207,7 @@ const Index: React.FC = () => {
               View All <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {newArrivals.map((product) => (
               <ProductCard key={product._id} product={product} />
@@ -219,7 +238,7 @@ const Index: React.FC = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">@laceup</h2>
             <p className="text-muted-foreground">Follow us on Instagram for daily inspiration</p>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {products.slice(0, 4).map((product, i) => (
               <a

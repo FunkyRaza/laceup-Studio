@@ -1,10 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, ShoppingBag, Edit, Trash2 } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import { cn, getImageUrl } from '@/lib/utils';
+import api from '@/lib/api';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
@@ -14,11 +17,39 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
   const { addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
   const isWishlisted = isInWishlist(product._id);
 
-  const discount = product.compareAtPrice
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+  const discount = product.oldPrice
+    ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
     : 0;
+
+  const mainImage = getImageUrl(product.image || product.images?.[0]);
+  const secondImage = product.images?.[1] ? getImageUrl(product.images[1]) : null;
+  const categoryName = typeof product.category === 'object' ? product.category.name : product.category;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
+      try {
+        await api.delete(`/products/${product._id}`);
+        toast.success('Product deleted successfully');
+        // Reload the page to refresh the product list
+        window.location.reload();
+      } catch (error) {
+        toast.error('Failed to delete product');
+      }
+    }
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/admin/products?edit=${product._id}`);
+  };
 
   return (
     <div className={cn('group relative animate-fade-in', className)}>
@@ -26,13 +57,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
       <div className="relative aspect-[3/4] overflow-hidden bg-secondary rounded-lg mb-4">
         <Link to={`/product/${product.slug}`}>
           <img
-            src={product.images[0]}
+            src={mainImage}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {product.images[1] && (
+          {secondImage && (
             <img
-              src={product.images[1]}
+              src={secondImage}
               alt={product.name}
               className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             />
@@ -67,6 +98,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
           >
             <Heart className={cn('w-4 h-4', isWishlisted && 'fill-current')} />
           </button>
+
+          {/* Admin Controls */}
+          {isAdmin && (
+            <>
+              <button
+                onClick={handleEdit}
+                className="p-2 rounded-full bg-amber-500 text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-amber-600"
+                title="Edit Product"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="p-2 rounded-full bg-red-500 text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-red-600"
+                title="Delete Product"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Add to Cart */}
@@ -85,16 +136,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
       <Link to={`/product/${product.slug}`}>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">
-            {product.category.replace('-', ' ')}
+            {typeof product.category === 'object' ? product.category.name : product.category.replace('-', ' ')}
           </p>
           <h3 className="font-medium text-foreground group-hover:text-accent transition-colors line-clamp-1">
             {product.name}
           </h3>
           <div className="flex items-center gap-2">
-            <span className="font-semibold">${product.price.toFixed(2)}</span>
-            {product.compareAtPrice && (
+            <span className="font-semibold">₹{product.price.toFixed(2)}</span>
+            {product.oldPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${product.compareAtPrice.toFixed(2)}
+                ₹{product.oldPrice.toFixed(2)}
               </span>
             )}
           </div>
