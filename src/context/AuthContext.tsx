@@ -22,19 +22,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedUser = localStorage.getItem('laceup_current_user');
     if (storedUser) {
-      let userData = JSON.parse(storedUser);
-      
-      // Normalize user data structure when loading from localStorage
-      if (userData.role === 'admin' || userData.role === 'superadmin') {
-        // For admin users, split name into firstName and lastName if they don't exist
-        if (userData.name && (!userData.firstName || !userData.lastName)) {
-          const nameParts = userData.name.split(' ');
-          userData.firstName = nameParts[0] || '';
-          userData.lastName = nameParts.slice(1).join(' ') || '';
+      try {
+        let userData = JSON.parse(storedUser);
+        // Check if userData is null or undefined before accessing properties
+        if (userData && typeof userData === 'object') {
+          // Normalize user data structure when loading from localStorage
+          if (userData && (userData.role === 'admin' || userData.role === 'superadmin')) {
+            // For admin users, split name into firstName and lastName if they don't exist
+            if (userData.name && (!userData.firstName || !userData.lastName)) {
+              const nameParts = userData.name.split(' ');
+              userData.firstName = nameParts[0] || '';
+              userData.lastName = nameParts.slice(1).join(' ') || '';
+            }
+          }
+          
+          setUser(userData);
         }
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        // Clear invalid data from localStorage
+        localStorage.removeItem('laceup_current_user');
       }
-      
-      setUser(userData);
     }
   }, []);
 
@@ -44,7 +52,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       // Normalize user data structure to ensure consistency between admin and regular users
       let normalizedUserData = { ...data };
-      if (data.role === 'admin' || data.role === 'superadmin') {
+      if (data?.role === 'admin' || data?.role === 'superadmin') {
         // For admin users, split name into firstName and lastName if they don't exist
         if (data.name && (!data.firstName || !data.lastName)) {
           const nameParts = data.name.split(' ');
@@ -56,8 +64,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(normalizedUserData);
       localStorage.setItem('laceup_current_user', JSON.stringify(normalizedUserData));
 
-      const isManageable = normalizedUserData.role === 'admin' || normalizedUserData.role === 'superadmin';
-      toast.success(isManageable ? 'Welcome to Admin Dashboard!' : `Welcome back, ${normalizedUserData.name}!`);
+      const isManageable = normalizedUserData?.role === 'admin' || normalizedUserData?.role === 'superadmin';
+      toast.success(isManageable ? 'Welcome to Admin Dashboard!' : `Welcome back, ${normalizedUserData?.name || 'User'}!`);
       return true;
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Invalid email or password';
@@ -94,7 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       let updatedUser = { ...user, ...updates };
       
       // Normalize user data structure when updating profile
-      if (updatedUser.role === 'admin' || updatedUser.role === 'superadmin') {
+      if (updatedUser?.role === 'admin' || updatedUser?.role === 'superadmin') {
         // For admin users, ensure firstName and lastName exist
         if (updatedUser.name && (!updatedUser.firstName || !updatedUser.lastName)) {
           const nameParts = updatedUser.name.split(' ');
@@ -114,7 +122,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin' || user?.role === 'superadmin',
+        isAdmin: user && (user.role === 'admin' || user.role === 'superadmin'),
         login,
         signup,
         logout,

@@ -88,7 +88,7 @@ const Settings = () => {
           firstName: adminData.name?.split(' ')[0] || '',
           lastName: adminData.name?.split(' ')[1] || '',
           email: adminData.email || '',
-          role: adminData.role || 'admin'
+          role: adminData?.role || 'admin'
         }));
       } catch (error: any) {
         console.error('Error fetching admin profile:', error);

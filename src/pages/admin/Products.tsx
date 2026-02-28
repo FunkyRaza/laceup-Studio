@@ -8,14 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -55,6 +47,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import ModernTable from '@/components/admin/ui/ModernTable';
 
 const Products = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -78,9 +71,13 @@ const Products = () => {
     featured: false,
     isActive: true,
     images: [],
+    sizes: [],
+    colors: []
   });
 
   const [tagsInput, setTagsInput] = useState('');
+  const [sizeInput, setSizeInput] = useState({ name: '', quantity: 0 });
+  const [colorInput, setColorInput] = useState({ name: '', code: '', quantity: 0 });
 
   // Load products
   const fetchProducts = async () => {
@@ -148,6 +145,38 @@ const Products = () => {
     }));
   };
 
+  const addSize = () => {
+    if (!sizeInput.name.trim()) return;
+    setFormData(prev => ({
+      ...prev,
+      sizes: [...(prev.sizes || []), { name: sizeInput.name, quantity: parseInt(sizeInput.quantity.toString()) || 0 }]
+    }));
+    setSizeInput({ name: '', quantity: 0 });
+  };
+
+  const removeSize = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      sizes: (prev.sizes || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const addColor = () => {
+    if (!colorInput.name.trim()) return;
+    setFormData(prev => ({
+      ...prev,
+      colors: [...(prev.colors || []), { name: colorInput.name, code: colorInput.code, quantity: parseInt(colorInput.quantity.toString()) || 0 }]
+    }));
+    setColorInput({ name: '', code: '', quantity: 0 });
+  };
+
+  const removeColor = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      colors: (prev.colors || []).filter((_, i) => i !== index)
+    }));
+  };
+
   const handleTagsKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -165,7 +194,9 @@ const Products = () => {
         ...formData,
         // Backend expects 'category' as ID string, ensure it's provided
         // Set main image from first image in array, or keep existing image field
-        image: formData.images && formData.images.length > 0 ? formData.images[0] : (formData.image || '/placeholder.svg')
+        image: formData.images && formData.images.length > 0 ? formData.images[0] : (formData.image || '/placeholder.svg'),
+        sizes: formData.sizes || [],
+        colors: formData.colors || []
       };
 
       if (editingProduct) {
@@ -190,7 +221,9 @@ const Products = () => {
     setEditingProduct(product);
     setFormData({
       ...product,
-      category: product.category?._id || product.category // Handle populated category
+      category: product.category?._id || product.category, // Handle populated category
+      sizes: product.sizes || [],
+      colors: product.colors || []
     });
     setIsDialogOpen(true);
   };
@@ -209,11 +242,13 @@ const Products = () => {
     setFormData({
       name: '', description: '', price: 0, oldPrice: 0, category: '',
       gender: 'Unisex', stock: 0, featured: false, isActive: true,
-      images: [], tags: []
+      images: [], tags: [], sizes: [], colors: []
     });
     setEditingProduct(null);
     setActiveTab("general");
     setTagsInput('');
+    setSizeInput({ name: '', quantity: 0 });
+    setColorInput({ name: '', code: '', quantity: 0 });
   };
 
   return (
@@ -340,6 +375,70 @@ const Products = () => {
                         />
                       </div>
 
+                      {/* Sizes */}
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-semibold text-gray-700">Sizes</label>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Size (e.g. S, M, L)"
+                            value={sizeInput.name}
+                            onChange={(e) => setSizeInput({...sizeInput, name: e.target.value})}
+                            className="bg-gray-50 border-gray-200"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Quantity"
+                            value={sizeInput.quantity}
+                            onChange={(e) => setSizeInput({...sizeInput, quantity: parseInt(e.target.value) || 0})}
+                            className="bg-gray-50 border-gray-200 w-24"
+                          />
+                          <Button type="button" onClick={addSize} variant="secondary">Add</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {(formData.sizes || []).map((size: any, i: number) => (
+                            <span key={i} className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              {size.name}: {size.quantity}
+                              <button type="button" onClick={() => removeSize(i)}><X className="w-3 h-3" /></button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Colors */}
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-semibold text-gray-700">Colors</label>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Color name (e.g. Red, Blue)"
+                            value={colorInput.name}
+                            onChange={(e) => setColorInput({...colorInput, name: e.target.value})}
+                            className="bg-gray-50 border-gray-200"
+                          />
+                          <Input
+                            placeholder="Color code (e.g. #FF0000)"
+                            value={colorInput.code}
+                            onChange={(e) => setColorInput({...colorInput, code: e.target.value})}
+                            className="bg-gray-50 border-gray-200"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Quantity"
+                            value={colorInput.quantity}
+                            onChange={(e) => setColorInput({...colorInput, quantity: parseInt(e.target.value) || 0})}
+                            className="bg-gray-50 border-gray-200 w-24"
+                          />
+                          <Button type="button" onClick={addColor} variant="secondary">Add</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {(formData.colors || []).map((color: any, i: number) => (
+                            <span key={i} className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              {color.name}{color.code && ` (${color.code})`}: {color.quantity}
+                              <button type="button" onClick={() => removeColor(i)}><X className="w-3 h-3" /></button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
                       <div className="flex gap-4 md:col-span-2">
                         <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                           <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} className="w-4 h-4 text-blue-600 rounded" />
@@ -423,81 +522,122 @@ const Products = () => {
       </div>
 
       {/* PRODUCTS TABLE (Simplified for brevity) */}
-      <Card className="bg-white border-gray-200 shadow-sm">
+      <Card className="bg-gray-800 border-gray-700 shadow-sm">
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle className="text-lg font-bold text-gray-900">All Products</CardTitle>
+            <CardTitle className="text-lg font-bold text-gray-100">All Products</CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search..." className="pl-8 bg-gray-50 border-gray-200" />
+              <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search..." className="pl-8 bg-gray-700 border-gray-600 text-gray-100" />
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50 hover:bg-gray-50">
-                  <TableHead className="pl-6">Image</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Brand</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead className="text-right pr-6">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map(p => (
-                  <TableRow key={p._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <TableCell className="pl-6">
-                      <img
-                        src={getImageUrl(p.image || p.images?.[0])}
-                        alt=""
-                        className="w-10 h-10 object-cover rounded-md bg-gray-100 border border-gray-200"
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium text-gray-900">{p.name}</TableCell>
-                    <TableCell className="capitalize text-gray-500">
-                      {typeof p.category === 'object' ? p.category?.name : p.category}
-                    </TableCell>
-                    <TableCell className="text-gray-500">{p.brand || '-'}</TableCell>
-                    <TableCell className="font-medium text-gray-900">₹{p.price}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}`}>
-                        {p.stock} in stock
+          <ModernTable 
+            columns={[
+              {
+                key: 'image',
+                title: 'Image',
+                render: (_, record) => (
+                  <img
+                    src={getImageUrl(record.image || record.images?.[0])}
+                    alt=""
+                    className="w-10 h-10 object-cover rounded-md bg-gray-700 border border-gray-600"
+                  />
+                )
+              },
+              {
+                key: 'name',
+                title: 'Product',
+                render: (value) => <span className="font-medium text-gray-200">{value}</span>
+              },
+              {
+                key: 'category',
+                title: 'Category',
+                render: (value) => <span className="capitalize text-gray-400">{typeof value === 'object' ? value?.name : value}</span>
+              },
+              {
+                key: 'brand',
+                title: 'Brand',
+                render: (value) => <span className="text-gray-400">{value || '-'}</span>
+              },
+              {
+                key: 'sizes',
+                title: 'Sizes',
+                render: (value) => (
+                  <div className="flex flex-wrap gap-1">
+                    {(value || []).map((size: any, idx: number) => (
+                      <span key={idx} className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md text-xs">
+                        {size.name}: {size.quantity}
                       </span>
-                    </TableCell>
-                    <TableCell className="text-right space-x-2 pr-6">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(p)} className="text-gray-400 hover:text-blue-600 hover:bg-blue-50"><Edit className="w-4 h-4" /></Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete the product and remove it from our servers.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDelete(p._id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    ))}
+                    {(value || []).length === 0 && <span className="text-gray-500 text-xs">None</span>}
+                  </div>
+                )
+              },
+              {
+                key: 'colors',
+                title: 'Colors',
+                render: (value) => (
+                  <div className="flex flex-wrap gap-1">
+                    {(value || []).map((color: any, idx: number) => (
+                      <span key={idx} className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md text-xs">
+                        {color.name}{color.code ? ` (${color.code})` : ''}: {color.quantity}
+                      </span>
+                    ))}
+                    {(value || []).length === 0 && <span className="text-gray-500 text-xs">None</span>}
+                  </div>
+                )
+              },
+              {
+                key: 'price',
+                title: 'Price',
+                render: (value) => <span className="font-medium text-gray-200">₹{value}</span>
+              },
+              {
+                key: 'stock',
+                title: 'Stock',
+                render: (value) => (
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${value > 10 ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
+                    {value} in stock
+                  </span>
+                )
+              },
+              {
+                key: 'actions',
+                title: 'Actions',
+                render: (_, record) => (
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(record)} className="text-gray-400 hover:text-blue-400 hover:bg-blue-900/30"><Edit className="w-4 h-4" /></Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-400 hover:bg-red-900/30"><Trash2 className="w-4 h-4" /></Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-gray-800 text-gray-100 border border-gray-700">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-gray-100">Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-gray-400">
+                            This action cannot be undone. This will permanently delete the product and remove it from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="text-gray-300 border-gray-600 hover:bg-gray-700">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(record._id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )
+              }
+            ]}
+            data={filteredProducts}
+            emptyText="No products found"
+          />
         </CardContent>
       </Card>
     </div>

@@ -24,6 +24,11 @@ export interface Address {
   phone?: string;
 }
 
+export interface ProductSize {
+  name: string;
+  quantity: number;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -37,7 +42,7 @@ export interface Product {
   category: string | Category; // flexible
   subCategory?: string;
   gender: 'Men' | 'Women' | 'Unisex';
-  sizes?: string[];
+  sizes?: (string | ProductSize)[];
   colors?: ProductColor[];
   stock: number;
   featured: boolean;
@@ -74,7 +79,8 @@ export interface Review {
 
 export interface ProductColor {
   name: string;
-  hex: string;
+  code: string;
+  quantity: number;
 }
 
 export interface CartItem {

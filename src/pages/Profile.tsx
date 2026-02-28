@@ -79,7 +79,7 @@ const Profile: React.FC = () => {
                 </div>
 
                 <h2 className="text-2xl font-black text-slate-900 mb-1">{user.firstName} {user.lastName}</h2>
-                <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mb-6">{user.role} Member</p>
+                <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mb-6">{user.role || 'Customer'} Member</p>
 
                 <div className="space-y-3">
                   <button

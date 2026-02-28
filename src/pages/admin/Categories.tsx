@@ -8,14 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -44,6 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import ModernTable from '@/components/admin/ui/ModernTable';
 
 const Categories = () => {
   const [categories, setCategoriesState] = useState<any[]>([]);
@@ -287,113 +280,105 @@ const Categories = () => {
       </div>
 
       {/* Categories Table */}
-      <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
-        <CardHeader className="border-b border-gray-100 bg-gray-50/50">
-          <CardTitle className="text-gray-900 text-lg">Category List</CardTitle>
+      <Card className="bg-gray-800 border-gray-700 shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-gray-700 bg-gray-750">
+          <CardTitle className="text-gray-100 text-lg">Category List</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-gray-50">
-                <TableRow className="border-b border-gray-100">
-                  <TableHead className="text-gray-500 font-medium py-3">Category</TableHead>
-                  <TableHead className="text-gray-500 font-medium">Description</TableHead>
-                  <TableHead className="text-gray-500 font-medium">Status</TableHead>
-                  <TableHead className="text-gray-500 font-medium text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                    <TableRow key={category._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <TableCell className="font-medium text-gray-900">
-                        <div className="flex items-center">
-                          {category.image ? (
-                            <img
-                              src={category.image}
-                              alt={category.name}
-                              className="w-10 h-10 rounded-lg object-cover border border-gray-100 shadow-sm"
-                            />
-                          ) : (
-                            <div className="bg-gray-100 border border-gray-200 rounded-lg w-10 h-10 flex items-center justify-center">
-                              <span className="text-xs text-gray-400">N/A</span>
-                            </div>
-                          )}
-                          <div className="ml-4">
-                            <div className="font-semibold text-gray-900">{category.name}</div>
-                            <div className="text-xs text-gray-500 font-mono">{category.slug}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-600 max-w-xs text-sm truncate">
-                        {category.description || <span className="text-gray-400 italic">No description</span>}
-                      </TableCell>
-                      <TableCell>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${category.isActive
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
-                          }`}>
-                          {category.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(category)}
-                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 h-8 w-8"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the category and remove it from our servers.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDelete(category._id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-400">
-                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                          <Search className="h-6 w-6 opacity-30" />
-                        </div>
-                        <p className="text-lg font-medium text-gray-900">No categories found</p>
-                        <p className="text-sm">Try adding a new category</p>
+          <ModernTable 
+            columns={[
+              {
+                key: 'category',
+                title: 'Category',
+                render: (_, record) => (
+                  <div className="flex items-center">
+                    {record.image ? (
+                      <img
+                        src={record.image}
+                        alt={record.name}
+                        className="w-10 h-10 rounded-lg object-cover border border-gray-600 shadow-sm"
+                      />
+                    ) : (
+                      <div className="bg-gray-700 border border-gray-600 rounded-lg w-10 h-10 flex items-center justify-center">
+                        <span className="text-xs text-gray-400">N/A</span>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                    )}
+                    <div className="ml-4">
+                      <div className="font-semibold text-gray-200">{record.name}</div>
+                      <div className="text-xs text-gray-400 font-mono">{record.slug}</div>
+                    </div>
+                  </div>
+                )
+              },
+              {
+                key: 'description',
+                title: 'Description',
+                render: (value) => (
+                  <span className="text-gray-400 max-w-xs text-sm truncate">
+                    {value || <span className="text-gray-500 italic">No description</span>}
+                  </span>
+                )
+              },
+              {
+                key: 'isActive',
+                title: 'Status',
+                render: (value) => (
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${value
+                    ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                    : 'bg-red-500/20 text-red-400 border-red-500/30'
+                    }`}>
+                    {value ? 'Active' : 'Inactive'}
+                  </span>
+                )
+              },
+              {
+                key: 'actions',
+                title: 'Actions',
+                render: (_, record) => (
+                  <div className="flex justify-end space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(record)}
+                      className="text-gray-400 hover:text-blue-400 hover:bg-blue-900/30 h-8 w-8"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-400 hover:text-red-400 hover:bg-red-900/30 h-8 w-8"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-gray-800 text-gray-100 border border-gray-700">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-gray-100">Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-gray-400">
+                            This action cannot be undone. This will permanently delete the category and remove it from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="text-gray-300 border-gray-600 hover:bg-gray-700">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(record._id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )
+              }
+            ]}
+            data={filteredCategories}
+            emptyText="No categories found"
+          />
         </CardContent>
       </Card>
     </div>

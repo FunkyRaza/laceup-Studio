@@ -26,6 +26,15 @@ const productSchema = mongoose.Schema({
     metaTitle: { type: String },
     metaKeywords: { type: String },
     metaDescription: { type: String },
+    sizes: [{
+        name: { type: String, required: true },  // e.g., "S", "M", "L", "XL", etc.
+        quantity: { type: Number, required: true, default: 0 }
+    }],
+    colors: [{
+        name: { type: String, required: true },  // e.g., "Red", "Blue", "Black", etc.
+        code: { type: String },                  // e.g., hex code "#FF0000"
+        quantity: { type: Number, required: true, default: 0 }
+    }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin',

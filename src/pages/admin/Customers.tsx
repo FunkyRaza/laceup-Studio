@@ -8,14 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -53,6 +45,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import ModernTable from '@/components/admin/ui/ModernTable';
 
 const Customers = () => {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -260,107 +253,102 @@ const Customers = () => {
       </div>
 
       {/* Customers Table */}
-      <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
-        <CardHeader className="border-b border-gray-100 bg-gray-50/50">
-          <CardTitle className="text-gray-900 text-lg">Customer List</CardTitle>
+      <Card className="bg-gray-800 border-gray-700 shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-gray-700 bg-gray-750">
+          <CardTitle className="text-gray-100 text-lg">Customer List</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-gray-50">
-                <TableRow className="border-b border-gray-100">
-                  <TableHead className="text-gray-500 font-medium py-3">Customer</TableHead>
-                  <TableHead className="text-gray-500 font-medium">Email</TableHead>
-                  <TableHead className="text-gray-500 font-medium">Role</TableHead>
-                  <TableHead className="text-gray-500 font-medium">Join Date</TableHead>
-                  <TableHead className="text-gray-500 font-medium text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.length > 0 ? (
-                  filteredCustomers.map((customer) => (
-                    <TableRow key={customer._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <TableCell className="font-medium text-gray-900">
-                        <div className="flex items-center">
-                          <div className="bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center border border-blue-100">
-                            <User className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="ml-4">
-                            <div className="font-semibold text-gray-900">{customer.name}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-600">
-                        <div className="flex items-center">
-                          <Mail className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                          {customer.email}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${customer.role === 'admin'
-                          ? 'bg-purple-50 text-purple-700 border-purple-200'
-                          : 'bg-blue-50 text-blue-700 border-blue-200'
-                          }`}>
-                          {customer.role.charAt(0).toUpperCase() + customer.role.slice(1)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-gray-600 text-sm">
-                        {new Date(customer.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right space-x-2 pr-4">
+          <ModernTable 
+            columns={[
+              {
+                key: 'name',
+                title: 'Customer',
+                render: (_, record) => (
+                  <div className="flex items-center">
+                    <div className="bg-blue-500/20 w-10 h-10 rounded-full flex items-center justify-center border border-blue-500/30">
+                      <User className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="ml-4">
+                      <div className="font-semibold text-gray-200">{record.name}</div>
+                    </div>
+                  </div>
+                )
+              },
+              {
+                key: 'email',
+                title: 'Email',
+                render: (value) => (
+                  <div className="flex items-center">
+                    <Mail className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                    <span className="text-gray-300">{value}</span>
+                  </div>
+                )
+              },
+              {
+                key: 'role',
+                title: 'Role',
+                render: (value) => (
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${value === 'admin'
+                    ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                    : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                    }`}>
+                    {value ? value.charAt(0).toUpperCase() + value.slice(1) : 'User'}
+                  </span>
+                )
+              },
+              {
+                key: 'createdAt',
+                title: 'Join Date',
+                render: (value) => <span className="text-gray-400 text-sm">{new Date(value).toLocaleDateString()}</span>
+              },
+              {
+                key: 'actions',
+                title: 'Actions',
+                render: (_, record) => (
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(record)}
+                      className="text-gray-400 hover:text-blue-400 hover:bg-blue-900/30 h-8 w-8"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEdit(customer)}
-                          className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 h-8 w-8"
+                          className="text-gray-400 hover:text-red-400 hover:bg-red-900/30 h-8 w-8"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the customer account and remove their data from our servers.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleDelete(customer._id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-400">
-                        <User className="h-12 w-12 mb-4 opacity-20" />
-                        <p className="text-lg font-medium text-gray-900">No customers found</p>
-                        <p className="text-sm">Try adjusting your search</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-gray-800 text-gray-100 border border-gray-700">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-gray-100">Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-gray-400">
+                            This action cannot be undone. This will permanently delete the customer account and remove their data from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="text-gray-300 border-gray-600 hover:bg-gray-700">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(record._id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )
+              }
+            ]}
+            data={filteredCustomers}
+            emptyText="No customers found"
+          />
         </CardContent>
       </Card>
     </div>

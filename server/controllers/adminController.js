@@ -29,7 +29,7 @@ const authAdmin = asyncHandler(async (req, res) => {
                 role: admin.role,
                 permissions: admin.permissions,
                 token: generateToken({
-                    adminId: admin._id,
+                    id: admin._id,
                     role: admin.role,
                     permissions: admin.permissions
                 }),

@@ -21,10 +21,15 @@ const Login: React.FC = () => {
     if (isAuthenticated) {
       const storedUser = localStorage.getItem('laceup_current_user');
       if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData.role === 'admin' || userData.role === 'superadmin') {
-          navigate('/admin/dashboard', { replace: true });
-        } else {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData && (userData.role === 'admin' || userData.role === 'superadmin')) {
+            navigate('/admin/dashboard', { replace: true });
+          } else {
+            navigate(from, { replace: true });
+          }
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
           navigate(from, { replace: true });
         }
       }
@@ -40,10 +45,15 @@ const Login: React.FC = () => {
       // Automatic redirection based on role
       const storedUser = localStorage.getItem('laceup_current_user');
       if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData.role === 'admin' || userData.role === 'superadmin') {
-          navigate('/admin/dashboard', { replace: true });
-        } else {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData && (userData.role === 'admin' || userData.role === 'superadmin')) {
+            navigate('/admin/dashboard', { replace: true });
+          } else {
+            navigate(from, { replace: true });
+          }
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
           navigate(from, { replace: true });
         }
       }

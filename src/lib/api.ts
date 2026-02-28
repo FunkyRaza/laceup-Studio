@@ -13,9 +13,16 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
     const user = localStorage.getItem('laceup_current_user');
     if (user) {
-        const { token } = JSON.parse(user);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        try {
+            const userData = JSON.parse(user);
+            if (userData && typeof userData === 'object' && userData.token) {
+                const { token } = userData;
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+            }
+        } catch (error) {
+            console.error('Error parsing user data for auth header:', error);
         }
     }
     return config;

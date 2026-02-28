@@ -39,7 +39,8 @@ const createProduct = asyncHandler(async (req, res) => {
     const {
         name, description, price, oldPrice, stock, brand, subCategory,
         hsnCode, quality, gender, image, images, video, category,
-        featured, isActive, tags, metaTitle, metaKeywords, metaDescription
+        featured, isActive, tags, metaTitle, metaKeywords, metaDescription,
+        sizes, colors
     } = req.body;
 
     // Generate slug from name if not provided
@@ -49,6 +50,8 @@ const createProduct = asyncHandler(async (req, res) => {
         name, description, price, oldPrice, stock, brand, subCategory,
         hsnCode, quality, gender, image, images, video, category,
         featured, isActive, tags, metaTitle, metaKeywords, metaDescription,
+        sizes: sizes || [],
+        colors: colors || [],
         slug,
         createdBy: req.user._id
     });
@@ -76,6 +79,15 @@ const updateProduct = asyncHandler(async (req, res) => {
                 product[field] = req.body[field];
             }
         });
+
+        // Handle sizes and colors arrays specifically
+        if (req.body.sizes !== undefined) {
+            product.sizes = req.body.sizes;
+        }
+        
+        if (req.body.colors !== undefined) {
+            product.colors = req.body.colors;
+        }
 
         // Generate slug from name if not provided and name was changed
         if (req.body.name && !req.body.slug) {
